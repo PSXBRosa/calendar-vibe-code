@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar: Day Scrolling</title>
+    <title>Calendar: Full Scroll Fix</title>
     <style>
         :root {
             --bg: #f3f4f6;
@@ -87,35 +87,16 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            
-            /* Default Grid (Generic) */
             display: grid;
             grid-template-columns: repeat(7, 1fr); 
             gap: 1px;
             background-color: var(--border);
             border: 1px solid var(--border);
-            overflow: hidden; /* Prevent container scroll, rely on inner scroll */
+            overflow: hidden; /* Prevent container scroll */
         }
 
-        /* --- DAY CELLS --- */
-        .day-cell { 
-            background-color: white; 
-            padding: 8px; 
-            min-height: 0; /* Allow shrinking */
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .day-cell.header { 
-            background-color: #f9fafb; 
-            font-weight: bold; 
-            text-align: center; 
-            min-height: auto; 
-            padding: 10px;
-            height: auto;
-            flex-shrink: 0; 
-        }
-        
+        .day-cell { background-color: white; padding: 8px; min-height: 100px; display: flex; flex-direction: column; }
+        .day-cell.header { background-color: #f9fafb; font-weight: bold; text-align: center; min-height: auto; padding: 10px; flex-shrink: 0; }
         .day-number { font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; color: #6b7280; flex-shrink: 0; }
         .not-current-month { background-color: #fafafa; color: #d1d5db; }
 
@@ -133,7 +114,7 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
             font-weight: 500;
             border-left: 4px solid transparent; 
-            flex-shrink: 0; /* Don't squash events */
+            flex-shrink: 0;
         }
         .prio-high { border-left-color: var(--danger); }
         .prio-medium { border-left-color: var(--warning); }
@@ -141,37 +122,38 @@
         
         /* --- VIEW SPECIFIC OVERRIDES --- */
 
-        /* WEEK VIEW & MONTH VIEW (Shared Scroll Logic) */
+        /* 1. WEEK VIEW */
         .view-week #calendar-container {
             grid-template-rows: auto minmax(0, 1fr); 
             grid-auto-rows: unset; 
         }
 
+        /* 2. MONTH & WEEK VIEW SCROLLING (THE FIX) */
+        /* Apply scrolling to day cells in BOTH views */
         .view-week .day-cell, 
         .view-month .day-cell {
-            /* Enable internal scrolling for days */
+            min-height: 0; 
+            height: 100%;  
             overflow-y: auto; 
         }
         
-        /* Header cells should never scroll */
-        .view-week .day-cell.header,
+        /* Prevent Headers from scrolling/shrinking */
+        .view-week .day-cell.header, 
         .view-month .day-cell.header {
-            overflow: hidden;
+            overflow: hidden; 
+            height: auto;
         }
 
-        /* YEAR VIEW - FIXED */
+        /* 3. YEAR VIEW */
         .view-year #calendar-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            
-            /* Reset rows to allow cards to stack properly */
             grid-template-rows: none !important; 
             grid-auto-rows: max-content !important;
-            
             gap: 20px;
             background: transparent;
             border: none;
-            overflow-y: auto !important; /* Enable page scroll for Year view */
+            overflow-y: auto !important;
             padding-right: 5px; 
             align-content: start;
         }
@@ -188,49 +170,22 @@
             min-height: min-content; 
         }
 
-        .month-card h3 { 
-            margin: 0 0 10px 0; 
-            border-bottom: 1px solid var(--border); 
-            padding-bottom: 5px; 
-            text-align: center; 
-            font-size: 1.1rem; 
-        }
+        .month-card h3 { margin: 0 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 5px; text-align: center; font-size: 1.1rem; }
         
         /* LIST VIEW SPECIFIC */
-        .month-event-list { 
-            flex: 1; 
-            overflow-y: auto; 
-            max-height: 250px; 
-            min-height: 50px;
-        }
+        .month-event-list { flex: 1; overflow-y: auto; max-height: 250px; min-height: 50px; }
 
         /* GRID VIEW SPECIFIC */
-        .mini-grid { 
-            display: grid; 
-            grid-template-columns: repeat(7, 1fr); 
-            gap: 4px;
-            margin-top: 5px;
-        }
+        .mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 5px; }
 
         .mini-day { 
-            font-size: 0.75rem; 
-            text-align: center; 
-            aspect-ratio: 1 / 1; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            border-radius: 50%; 
-            color: var(--text);
+            font-size: 0.75rem; text-align: center; aspect-ratio: 1 / 1; 
+            display: flex; justify-content: center; align-items: center; 
+            border-radius: 50%; color: var(--text); border: 2px solid transparent; 
         }
         
-        .mini-day.header-day {
-            font-weight: bold;
-            color: #9ca3af;
-            aspect-ratio: auto;
-            height: 20px;
-        }
-
-        .has-item { color: white; font-weight: bold; }
+        .mini-day.header-day { font-weight: bold; color: #9ca3af; aspect-ratio: auto; height: 20px; border: none; }
+        .has-item-bold { font-weight: bold; }
 
         .year-event-item {
             padding: 6px; margin-bottom: 5px; border-radius: 4px; font-size: 0.8rem;
@@ -795,7 +750,6 @@
         }
 
         function renderMonth(data) {
-            // Headers
             ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(d => {
                 const el = document.createElement('div');
                 el.className = 'day-cell header';
@@ -808,11 +762,11 @@
             const firstDayIndex = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            // Calculate Weeks
+            // Dynamic Weeks Calculation
             const totalSlots = firstDayIndex + daysInMonth;
             const numWeeks = Math.ceil(totalSlots / 7);
             
-            // Set Dynamic Grid Rows (Auto for header + Equal parts for weeks)
+            // Set Grid Rows: Auto Header + Equal Fr for Weeks
             container.style.gridTemplateRows = `auto repeat(${numWeeks}, 1fr)`;
 
             for (let i = 0; i < firstDayIndex; i++) container.appendChild(document.createElement('div'));
@@ -906,10 +860,25 @@
                     const items = data.filter(ev => ev.date === dateStr);
                     let style = '';
                     let cssClass = '';
+                    
                     if(items.length > 0) {
-                        const color = getCategoryColor(items[0].categoryId);
-                        style = `background-color:${color};`;
-                        cssClass = 'has-item';
+                        const highPrio = items.filter(i => i.priority === 'high');
+                        
+                        if(highPrio.length > 0) {
+                            // Extract unique colors for gradient
+                            const uniqueColors = [...new Set(highPrio.map(i => getCategoryColor(i.categoryId)))];
+                            
+                            if(uniqueColors.length === 1) {
+                                style = `background-color: ${uniqueColors[0]}; color: white;`;
+                            } else {
+                                style = `background: linear-gradient(135deg, ${uniqueColors.join(', ')}); color: white;`;
+                            }
+                            cssClass = 'has-item-bold';
+                        } else {
+                            // Events exist but NO high priority -> Border + text color
+                            style = `border: 2px solid var(--primary); color: var(--text);`;
+                            cssClass = 'has-item-bold';
+                        }
                     }
                     html += `<div class="mini-day ${cssClass}" style="${style}">${d}</div>`;
                 }
