@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar: Full Scroll Fix</title>
+    <title>Calendar: Brazilian Holidays</title>
     <style>
         :root {
             --bg: #f3f4f6;
@@ -92,7 +92,7 @@
             gap: 1px;
             background-color: var(--border);
             border: 1px solid var(--border);
-            overflow: hidden; /* Prevent container scroll */
+            overflow: hidden;
         }
 
         .day-cell { background-color: white; padding: 8px; min-height: 100px; display: flex; flex-direction: column; }
@@ -121,15 +121,11 @@
         .prio-low { border-left-color: var(--success); }
         
         /* --- VIEW SPECIFIC OVERRIDES --- */
-
-        /* 1. WEEK VIEW */
         .view-week #calendar-container {
             grid-template-rows: auto minmax(0, 1fr); 
             grid-auto-rows: unset; 
         }
 
-        /* 2. MONTH & WEEK VIEW SCROLLING (THE FIX) */
-        /* Apply scrolling to day cells in BOTH views */
         .view-week .day-cell, 
         .view-month .day-cell {
             min-height: 0; 
@@ -137,14 +133,13 @@
             overflow-y: auto; 
         }
         
-        /* Prevent Headers from scrolling/shrinking */
         .view-week .day-cell.header, 
         .view-month .day-cell.header {
             overflow: hidden; 
             height: auto;
         }
 
-        /* 3. YEAR VIEW */
+        /* YEAR VIEW */
         .view-year #calendar-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -158,7 +153,6 @@
             align-content: start;
         }
 
-        /* --- YEAR VIEW CARDS --- */
         .month-card { 
             background: white; 
             border: 1px solid var(--border); 
@@ -171,8 +165,6 @@
         }
 
         .month-card h3 { margin: 0 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 5px; text-align: center; font-size: 1.1rem; }
-        
-        /* LIST VIEW SPECIFIC */
         .month-event-list { flex: 1; overflow-y: auto; max-height: 250px; min-height: 50px; }
 
         /* GRID VIEW SPECIFIC */
@@ -295,6 +287,7 @@
         <div class="flex-between" style="width: 100%;">
             <div class="flex" style="align-items: center;">
                 <h2 id="current-date-display" style="margin:0;">Date</h2>
+                <span id="loading-status" style="font-size:0.8rem; color:#6b7280; margin-left:10px;"></span>
             </div>
             <div class="controls">
                 <button class="btn btn-green" onclick="downloadData()">&#128190; Save</button>
@@ -399,6 +392,66 @@
             editingCategoryId: null,
             categoryPendingDelete: null 
         };
+
+        // --- FETCH ONLINE HOLIDAYS ---
+        async function fetchHolidays() {
+            const statusEl = document.getElementById('loading-status');
+            statusEl.innerText = "Fetching holidays...";
+            
+            const years = [2025, 2026, 2027];
+            let newHolidaysCount = 0;
+
+            // 1. Ensure "Public Holiday" category exists
+            let holidayCat = categories.find(c => c.name === 'Public Holiday');
+            let holidayCatId;
+            
+            if (!holidayCat) {
+                holidayCatId = 'holidays_' + Date.now();
+                categories.push({
+                    id: holidayCatId,
+                    name: 'Public Holiday',
+                    color: '#ef4444' // Standard Red
+                });
+                console.log("Created Holiday Category");
+            } else {
+                holidayCatId = holidayCat.id;
+            }
+
+            try {
+                for (let year of years) {
+                    const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/BR`);
+                    if (!response.ok) continue;
+                    const data = await response.json();
+
+                    data.forEach(h => {
+                        // Create unique ID based on date and name to prevent dupes
+                        const uniqueId = `hol_${h.date}_${h.localName.replace(/\s/g, '')}`;
+                        
+                        // Check if already exists
+                        if (!events.find(ev => ev.id === uniqueId)) {
+                            events.push({
+                                id: uniqueId,
+                                name: h.localName,
+                                date: h.date,
+                                categoryId: holidayCatId,
+                                priority: 'high',
+                                description: `${h.name} (Public Holiday)`
+                            });
+                            newHolidaysCount++;
+                        }
+                    });
+                }
+                statusEl.innerText = "";
+                if(newHolidaysCount > 0) {
+                    console.log(`Added ${newHolidaysCount} new holidays.`);
+                    updateCategoryDropdowns();
+                    render();
+                }
+            } catch (err) {
+                console.error("Failed to fetch holidays:", err);
+                statusEl.innerText = "Offline mode";
+            }
+        }
         
         // --- FILE HANDLING ---
         function downloadData() {
@@ -762,11 +815,9 @@
             const firstDayIndex = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-            // Dynamic Weeks Calculation
+            // Dynamic Weeks
             const totalSlots = firstDayIndex + daysInMonth;
             const numWeeks = Math.ceil(totalSlots / 7);
-            
-            // Set Grid Rows: Auto Header + Equal Fr for Weeks
             container.style.gridTemplateRows = `auto repeat(${numWeeks}, 1fr)`;
 
             for (let i = 0; i < firstDayIndex; i++) container.appendChild(document.createElement('div'));
@@ -865,9 +916,7 @@
                         const highPrio = items.filter(i => i.priority === 'high');
                         
                         if(highPrio.length > 0) {
-                            // Extract unique colors for gradient
                             const uniqueColors = [...new Set(highPrio.map(i => getCategoryColor(i.categoryId)))];
-                            
                             if(uniqueColors.length === 1) {
                                 style = `background-color: ${uniqueColors[0]}; color: white;`;
                             } else {
@@ -875,7 +924,6 @@
                             }
                             cssClass = 'has-item-bold';
                         } else {
-                            // Events exist but NO high priority -> Border + text color
                             style = `border: 2px solid var(--primary); color: var(--text);`;
                             cssClass = 'has-item-bold';
                         }
@@ -899,6 +947,8 @@
 
         updateCategoryDropdowns();
         render();
+        // Trigger fetch on load
+        fetchHolidays();
 
     </script>
 </body>
