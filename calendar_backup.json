@@ -1,0 +1,394 @@
+{
+  "events": [
+    {
+      "id": "hol_2025-01-01_ConfraternizaçãoUniversal",
+      "name": "Confraternização Universal",
+      "date": "2025-01-01",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "New Year's Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-03-03_Carnaval",
+      "name": "Carnaval",
+      "date": "2025-03-03",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Carnival (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-03-04_Carnaval",
+      "name": "Carnaval",
+      "date": "2025-03-04",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Carnival (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-04-18_Sexta-feiraSanta",
+      "name": "Sexta-feira Santa",
+      "date": "2025-04-18",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Good Friday (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-04-20_DomingodePáscoa",
+      "name": "Domingo de Páscoa",
+      "date": "2025-04-20",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Easter Sunday (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-04-21_DiadeTiradentes",
+      "name": "Dia de Tiradentes",
+      "date": "2025-04-21",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Tiradentes (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-05-01_DiadoTrabalhador",
+      "name": "Dia do Trabalhador",
+      "date": "2025-05-01",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Labour Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-06-19_CorpusChristi",
+      "name": "Corpus Christi",
+      "date": "2025-06-19",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Corpus Christi (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-07-09_RevoluçãoConstitucionalistade1932",
+      "name": "Revolução Constitucionalista de 1932",
+      "date": "2025-07-09",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Constitutionalist Revolution of 1932 (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-09-07_DiadaIndependência",
+      "name": "Dia da Independência",
+      "date": "2025-09-07",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Independence Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-10-12_NossaSenhoraAparecida",
+      "name": "Nossa Senhora Aparecida",
+      "date": "2025-10-12",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Our Lady of Aparecida (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-11-02_DiadeFinados",
+      "name": "Dia de Finados",
+      "date": "2025-11-02",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "All Souls' Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-11-15_ProclamaçãodaRepública",
+      "name": "Proclamação da República",
+      "date": "2025-11-15",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Republic Proclamation Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-11-20_DiadaConsciênciaNegra",
+      "name": "Dia da Consciência Negra",
+      "date": "2025-11-20",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Black Awareness Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2025-12-25_Natal",
+      "name": "Natal",
+      "date": "2025-12-25",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Christmas Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-01-01_ConfraternizaçãoUniversal",
+      "name": "Confraternização Universal",
+      "date": "2026-01-01",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "New Year's Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-02-16_Carnaval",
+      "name": "Carnaval",
+      "date": "2026-02-16",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Carnival (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-02-17_Carnaval",
+      "name": "Carnaval",
+      "date": "2026-02-17",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Carnival (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-04-03_Sexta-feiraSanta",
+      "name": "Sexta-feira Santa",
+      "date": "2026-04-03",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Good Friday (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-04-05_DomingodePáscoa",
+      "name": "Domingo de Páscoa",
+      "date": "2026-04-05",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Easter Sunday (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-04-21_DiadeTiradentes",
+      "name": "Dia de Tiradentes",
+      "date": "2026-04-21",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Tiradentes (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-05-01_DiadoTrabalhador",
+      "name": "Dia do Trabalhador",
+      "date": "2026-05-01",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Labour Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-06-04_CorpusChristi",
+      "name": "Corpus Christi",
+      "date": "2026-06-04",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Corpus Christi (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-07-09_RevoluçãoConstitucionalistade1932",
+      "name": "Revolução Constitucionalista de 1932",
+      "date": "2026-07-09",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Constitutionalist Revolution of 1932 (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-09-07_DiadaIndependência",
+      "name": "Dia da Independência",
+      "date": "2026-09-07",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Independence Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-10-12_NossaSenhoraAparecida",
+      "name": "Nossa Senhora Aparecida",
+      "date": "2026-10-12",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Our Lady of Aparecida (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-11-02_DiadeFinados",
+      "name": "Dia de Finados",
+      "date": "2026-11-02",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "All Souls' Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-11-15_ProclamaçãodaRepública",
+      "name": "Proclamação da República",
+      "date": "2026-11-15",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Republic Proclamation Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-11-20_DiadaConsciênciaNegra",
+      "name": "Dia da Consciência Negra",
+      "date": "2026-11-20",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Black Awareness Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2026-12-25_Natal",
+      "name": "Natal",
+      "date": "2026-12-25",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Christmas Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-01-01_ConfraternizaçãoUniversal",
+      "name": "Confraternização Universal",
+      "date": "2027-01-01",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "New Year's Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-02-08_Carnaval",
+      "name": "Carnaval",
+      "date": "2027-02-08",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Carnival (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-02-09_Carnaval",
+      "name": "Carnaval",
+      "date": "2027-02-09",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Carnival (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-03-26_Sexta-feiraSanta",
+      "name": "Sexta-feira Santa",
+      "date": "2027-03-26",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Good Friday (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-03-28_DomingodePáscoa",
+      "name": "Domingo de Páscoa",
+      "date": "2027-03-28",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Easter Sunday (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-04-21_DiadeTiradentes",
+      "name": "Dia de Tiradentes",
+      "date": "2027-04-21",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Tiradentes (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-05-01_DiadoTrabalhador",
+      "name": "Dia do Trabalhador",
+      "date": "2027-05-01",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Labour Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-05-27_CorpusChristi",
+      "name": "Corpus Christi",
+      "date": "2027-05-27",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Corpus Christi (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-07-09_RevoluçãoConstitucionalistade1932",
+      "name": "Revolução Constitucionalista de 1932",
+      "date": "2027-07-09",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Constitutionalist Revolution of 1932 (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-09-07_DiadaIndependência",
+      "name": "Dia da Independência",
+      "date": "2027-09-07",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Independence Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-10-12_NossaSenhoraAparecida",
+      "name": "Nossa Senhora Aparecida",
+      "date": "2027-10-12",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Our Lady of Aparecida (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-11-02_DiadeFinados",
+      "name": "Dia de Finados",
+      "date": "2027-11-02",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "All Souls' Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-11-15_ProclamaçãodaRepública",
+      "name": "Proclamação da República",
+      "date": "2027-11-15",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Republic Proclamation Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-11-20_DiadaConsciênciaNegra",
+      "name": "Dia da Consciência Negra",
+      "date": "2027-11-20",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Black Awareness Day (Public Holiday)"
+    },
+    {
+      "id": "hol_2027-12-25_Natal",
+      "name": "Natal",
+      "date": "2027-12-25",
+      "categoryId": "holidays_1767717906359",
+      "priority": "high",
+      "description": "Christmas Day (Public Holiday)"
+    }
+  ],
+  "categories": [
+    {
+      "id": "default",
+      "name": "General",
+      "color": "#6b7280"
+    },
+    {
+      "id": "holidays_1767717906359",
+      "name": "Public Holiday",
+      "color": "#ef4444"
+    }
+  ],
+  "appState": {
+    "view": "month",
+    "currentDate": "2026-01-06T16:45:06.354Z",
+    "yearMode": "list",
+    "activeCategories": [
+      "default",
+      "holidays_1767717906359"
+    ],
+    "activePriorities": [
+      "high",
+      "medium",
+      "low"
+    ],
+    "sortBy": "priority_desc",
+    "filterPanelOpen": false,
+    "queryHistory": []
+  },
+  "savedAt": "2026-01-06T16:45:31.597Z"
+}
