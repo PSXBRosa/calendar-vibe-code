@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar: Sort Fixed</title>
+    <title>Calendar: SQL Advanced</title>
+    <script src="https://cdn.jsdelivr.net/npm/alasql@4"></script>
+    
     <style>
         :root {
             --bg: #f3f4f6;
@@ -13,6 +15,8 @@
             --danger: #ef4444;    
             --warning: #f59e0b;   
             --success: #10b981;   
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
         }
 
         * { box-sizing: border-box; }
@@ -33,7 +37,6 @@
         .flex { display: flex; gap: 10px; }
         .flex-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .flex-center { display: flex; justify-content: center; align-items: center; }
         .flex-col { display: flex; flex-direction: column; gap: 10px; }
         
         .btn, .input-select {
@@ -49,162 +52,128 @@
         .btn-primary { background-color: var(--primary); color: white; border-color: var(--primary); }
         .btn-primary:hover { background-color: #2563eb; }
         .btn-danger { background-color: var(--danger); color: white; border-color: var(--danger); }
-        .btn-danger:hover { background-color: #dc2626; }
         .btn-green { background-color: var(--success); color: white; border-color: var(--success); }
+        .btn-dark { background-color: #374151; color: white; border-color: #374151; }
         .btn-active { background-color: #e5e7eb; font-weight: bold; border-color: #9ca3af; }
 
         /* --- FILTER CHIPS --- */
         .chip {
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            border: 1px solid var(--border);
-            background: white;
-            transition: all 0.2s;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            padding: 4px 10px; border-radius: 15px; font-size: 0.75rem; cursor: pointer;
+            border: 1px solid var(--border); background: white; user-select: none;
+            display: flex; align-items: center; gap: 5px; transition: all 0.2s;
         }
-        .chip.active {
-            background-color: #eff6ff;
-            border-color: var(--primary);
-            color: var(--primary);
-            font-weight: 600;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
+        .chip.active { background-color: #eff6ff; border-color: var(--primary); color: var(--primary); font-weight: 600; }
         .chip-dot { width: 8px; height: 8px; border-radius: 50%; }
 
         /* --- HEADER & PANEL --- */
         header {
-            margin-bottom: 15px;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            flex-shrink: 0; 
+            margin-bottom: 15px; background: white; padding: 15px;
+            border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; gap: 15px; flex-shrink: 0; 
         }
         
         #filter-panel {
-            border-top: 1px solid var(--border);
-            padding-top: 15px;
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            max-height: 150px; 
-            overflow-y: auto;
+            border-top: 1px solid var(--border); padding-top: 15px;
+            display: flex; gap: 20px; flex-wrap: wrap; max-height: 150px; overflow-y: auto;
         }
         .filter-section { flex: 1; min-width: 200px; }
         .filter-section h4 { margin: 0 0 8px 0; font-size: 0.75rem; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em; }
 
         /* --- CALENDAR GRID --- */
-        #calendar-view {
-            flex: 1; 
-            display: flex;
-            flex-direction: column;
-            overflow: hidden; 
-            min-height: 0; 
-        }
-
+        #calendar-view { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
         #calendar-container {
-            flex: 1;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: grid;
-            /* 7 Days + 1 Summary Column */
-            grid-template-columns: repeat(7, 1fr) 160px; 
-            gap: 1px;
-            background-color: var(--border);
-            border: 1px solid var(--border);
-            overflow: hidden;
+            flex: 1; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: grid; gap: 1px; background-color: var(--border); border: 1px solid var(--border); overflow: hidden;
         }
 
         .day-cell { background-color: white; padding: 8px; min-height: 100px; display: flex; flex-direction: column; }
         .day-cell.header { background-color: #f9fafb; font-weight: bold; text-align: center; min-height: auto; padding: 10px; flex-shrink: 0; }
         .day-number { font-weight: 600; margin-bottom: 5px; font-size: 0.9rem; color: #6b7280; flex-shrink: 0; }
-        
-        /* Stats/List Cell Styling */
-        .stats-cell {
-            background-color: #f9fafb;
-            padding: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            gap: 2px;
-            border-left: 2px solid var(--border);
-            overflow-y: auto;
-            min-height: 0;
-        }
-        
-        .stats-cell .calendar-item {
-            width: 100%;
-            margin-bottom: 4px;
-        }
-
         .not-current-month { background-color: #fafafa; color: #d1d5db; }
-        .not-current-month .calendar-item { opacity: 0.5; }
+        .stats-cell { background-color: #f9fafb; padding: 8px; display: flex; flex-direction: column; gap: 2px; border-left: 2px solid var(--border); overflow-y: auto; min-height: 0; }
+        .stats-cell .calendar-item { width: 100%; margin-bottom: 4px; }
 
-        /* --- ITEMS (EVENTS) --- */
         .calendar-item {
-            font-size: 0.75rem;
-            padding: 3px 6px;
-            margin-bottom: 4px;
-            border-radius: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
-            color: white; 
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-            font-weight: 500;
-            border-left: 4px solid transparent; 
-            flex-shrink: 0;
+            font-size: 0.75rem; padding: 3px 6px; margin-bottom: 4px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            cursor: pointer; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.2); font-weight: 500; border-left: 4px solid transparent; flex-shrink: 0;
         }
         .prio-high { border-left-color: var(--danger); }
         .prio-medium { border-left-color: var(--warning); }
         .prio-low { border-left-color: var(--success); }
+
+        /* --- SQL VIEW LAYOUT --- */
+        #sql-view {
+            flex: 1; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 15px;
+            display: flex; flex-direction: column; gap: 15px; overflow: hidden;
+        }
         
-        /* --- VIEW SPECIFIC --- */
+        .sql-wrapper {
+            display: flex; gap: 20px; flex: 1; overflow: hidden;
+        }
+
+        /* Left Column: Editor & Results */
+        .sql-main {
+            flex: 3; display: flex; flex-direction: column; gap: 10px; min-width: 0;
+        }
+        .sql-editor {
+            width: 100%; height: 100px; background-color: var(--code-bg); color: var(--code-text);
+            font-family: 'Courier New', Courier, monospace; padding: 10px; border-radius: 6px; border: 1px solid #374151; resize: none;
+        }
+        .sql-results-container {
+            flex: 1; overflow: auto; border: 1px solid var(--border); border-radius: 6px; position: relative;
+        }
+        
+        /* Right Column: Schema & History */
+        .sql-sidebar {
+            flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 15px; overflow: hidden;
+            border-left: 1px solid var(--border); padding-left: 20px;
+        }
+        
+        .sidebar-box { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .sidebar-title { font-size: 0.85rem; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; color: #6b7280; }
+        
+        .schema-list, .history-list {
+            flex: 1; overflow-y: auto; background: #f9fafb; border: 1px solid var(--border); border-radius: 6px; padding: 10px;
+        }
+
+        .schema-table { margin-bottom: 15px; }
+        .schema-table-name { font-weight: bold; color: var(--primary); font-size: 0.85rem; margin-bottom: 4px; }
+        .schema-col { font-size: 0.75rem; color: #4b5563; padding-left: 10px; font-family: monospace; }
+
+        .history-item {
+            font-size: 0.75rem; padding: 6px; border-bottom: 1px solid var(--border);
+            cursor: pointer; color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            font-family: monospace;
+        }
+        .history-item:hover { background-color: #e5e7eb; color: black; }
+
+        /* Tables */
+        table.sql-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        table.sql-table th { background: #f9fafb; padding: 10px; text-align: left; border-bottom: 1px solid var(--border); position: sticky; top: 0; }
+        table.sql-table td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; }
+        table.sql-table tr:hover { background-color: #f9fafb; }
+
+        /* --- VIEW SPECIFIC CSS --- */
         .view-week #calendar-container { grid-template-rows: auto minmax(0, 1fr); grid-auto-rows: unset; }
-        
         .view-week .day-cell, .view-month .day-cell, .view-week .stats-cell, .view-month .stats-cell { min-height: 0; height: 100%; overflow-y: auto; }
         .view-week .day-cell.header, .view-month .day-cell.header, .view-month .stats-cell.header, .view-week .stats-cell.header { overflow: hidden; height: auto; }
-
-        /* Year View Override */
         .view-year #calendar-container {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             grid-template-rows: none !important; grid-auto-rows: max-content !important;
-            gap: 20px; background: transparent; border: none; overflow-y: auto !important;
-            padding-right: 5px; align-content: start;
+            gap: 20px; background: transparent; border: none; overflow-y: auto !important; padding-right: 5px; align-content: start;
         }
-
         .month-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; height: auto; min-height: min-content; }
         .month-card h3 { margin: 0 0 10px 0; border-bottom: 1px solid var(--border); padding-bottom: 5px; text-align: center; font-size: 1.1rem; }
         .month-event-list { flex: 1; overflow-y: auto; max-height: 250px; min-height: 50px; }
-
         .mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 5px; }
         .mini-day { font-size: 0.75rem; text-align: center; aspect-ratio: 1 / 1; display: flex; justify-content: center; align-items: center; border-radius: 50%; color: var(--text); border: 2px solid transparent; }
         .mini-day.header-day { font-weight: bold; color: #9ca3af; aspect-ratio: auto; height: 20px; border: none; }
         .has-item-bold { font-weight: bold; }
-
-        .year-event-item {
-            padding: 6px; margin-bottom: 5px; border-radius: 4px; font-size: 0.8rem;
-            display: flex; justify-content: space-between; align-items: center; color: white; cursor: pointer;
-        }
+        .year-event-item { padding: 6px; margin-bottom: 5px; border-radius: 4px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; color: white; cursor: pointer; }
         .priority-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; border: 1px solid rgba(255,255,255,0.8); }
-        .dot-high { background-color: var(--danger); }
-        .dot-medium { background-color: var(--warning); }
-        .dot-low { background-color: var(--success); }
 
-        /* --- FORMS & MODALS --- */
-        #create-view, #category-modal, #delete-options-modal {
-            max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; overflow-y: auto; max-height: 90vh;
-        }
+        /* --- MODALS --- */
+        #create-view, #category-modal, #delete-options-modal { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; overflow-y: auto; max-height: 90vh; }
         #delete-options-modal { max-width: 400px; }
         #modal-overlay, #delete-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 100; }
         #delete-modal-overlay { z-index: 200; }
@@ -226,7 +195,6 @@
     <div id="modal-overlay" class="hidden">
         <div id="category-modal">
             <h3 id="cat-modal-title" style="margin-top:0">Manage Categories</h3>
-            <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 15px;">Click a category below to edit, or fill the form to add new.</p>
             <form onsubmit="handleCategorySubmit(event)">
                 <div class="form-group"><label>Name</label><input type="text" id="cat-name" required placeholder="e.g. Work"></div>
                 <div class="form-group"><label>Color</label><div class="flex"><input type="color" id="cat-color" value="#3b82f6" style="height: 40px; width: 60px; padding: 0; border: none;"><input type="text" id="cat-color-text" value="#3b82f6" readonly style="flex:1;"></div></div>
@@ -266,15 +234,16 @@
                 <button class="btn" onclick="setView('week')" id="btn-week">Week</button>
                 <button class="btn" onclick="setView('month')" id="btn-month">Month</button>
                 <button class="btn" onclick="setView('year')" id="btn-year">Year</button>
+                <button class="btn btn-dark" onclick="setView('sql')" id="btn-sql">SQL</button>
                 <span>&nbsp;|&nbsp;</span>
-                <button class="btn btn-primary" onclick="openEventForm()">+ New Event</button>
+                <button class="btn btn-primary" onclick="openEventForm()">+ New</button>
             </div>
         </div>
         
         <div class="flex-between" style="border-top: 1px solid var(--border); padding-top: 10px;">
             <div class="flex">
-                <button class="btn btn-active" id="btn-toggle-filters" onclick="toggleFilterPanel()">&#9881; Filter & Sort</button>
-                <button class="btn" onclick="toggleCategoryModal(true)">Manage Categories</button>
+                <button class="btn btn-active" id="btn-toggle-filters" onclick="toggleFilterPanel()">&#9881; Filter</button>
+                <button class="btn" onclick="toggleCategoryModal(true)">Cats</button>
             </div>
             <div id="year-controls" class="flex hidden">
                 <span style="font-size: 0.9rem; color: #6b7280; align-self: center;">Year Mode:</span>
@@ -285,12 +254,11 @@
 
         <div id="filter-panel" class="hidden">
             <div class="filter-section" style="flex: 2;">
-                <h4>Toggle Categories <span style="font-size: 0.7em; cursor: pointer; color: var(--primary);" onclick="toggleAllCategories()">[Toggle All]</span></h4>
-                <div id="filter-cat-container" class="flex-wrap">
-                    </div>
+                <h4>Categories <span style="font-size: 0.7em; cursor: pointer; color: var(--primary);" onclick="toggleAllCategories()">[Toggle All]</span></h4>
+                <div id="filter-cat-container" class="flex-wrap"></div>
             </div>
             <div class="filter-section">
-                <h4>Toggle Priorities</h4>
+                <h4>Priorities</h4>
                 <div id="filter-prio-container" class="flex-wrap">
                     <div class="chip active" onclick="togglePrio('high', this)"><span class="chip-dot" style="background:var(--danger)"></span>High</div>
                     <div class="chip active" onclick="togglePrio('medium', this)"><span class="chip-dot" style="background:var(--warning)"></span>Medium</div>
@@ -300,11 +268,11 @@
             <div class="filter-section" style="flex: 0 0 150px;">
                 <h4>Order By</h4>
                 <select class="input-select" onchange="setSort(this.value)" style="width: 100%;">
-                    <option value="priority_desc" selected>Priority (High-Low)</option>
-                    <option value="priority_asc">Priority (Low-High)</option>
-                    <option value="category_asc">Category (A-Z)</option>
-                    <option value="date_asc">Date (Oldest)</option>
-                    <option value="date_desc">Date (Newest)</option>
+                    <option value="priority_desc" selected>Prio (High)</option>
+                    <option value="priority_asc">Prio (Low)</option>
+                    <option value="category_asc">Category</option>
+                    <option value="date_asc">Date (Old)</option>
+                    <option value="date_desc">Date (New)</option>
                     <option value="name_asc">Name (A-Z)</option>
                 </select>
             </div>
@@ -313,6 +281,46 @@
 
     <div id="calendar-view">
         <div id="calendar-container"></div>
+    </div>
+
+    <div id="sql-view" class="hidden">
+        <div class="flex-between">
+            <h2 style="margin:0">SQL Query</h2>
+            <div class="flex-wrap" style="justify-content: flex-end;">
+                <button class="btn" onclick="setSqlQuery('SELECT * FROM events')">All Events</button>
+                <button class="btn" onclick="setSqlQuery('SELECT category_name, COUNT(*) as [Total] FROM events GROUP BY category_name')">Count by Cat</button>
+                <button class="btn" onclick="setSqlQuery('SELECT COUNT(*) as WedCount FROM dates WHERE day_name = \'Wednesday\' AND date >= \'2026-01-06\' AND date <= \'2026-01-27\'')">Wed (Jan 26)</button>
+                <button class="btn" onclick="setSqlQuery('SELECT d.date, d.day_name FROM dates d LEFT JOIN events e ON d.date = e.date WHERE e.id IS NULL AND d.year = 2025 ORDER BY d.date LIMIT 50')">Empty 2025</button>
+            </div>
+        </div>
+        
+        <div class="sql-wrapper">
+            <div class="sql-main">
+                <textarea id="sql-input" class="sql-editor" placeholder="Enter SQL query... e.g. SELECT * FROM events WHERE priority = 'high'">SELECT * FROM events WHERE priority = 'high'</textarea>
+                <button class="btn btn-primary" onclick="runQuery()" style="align-self: flex-start;">Run Query</button>
+                
+                <div class="sql-results-container">
+                    <table id="sql-results" class="sql-table">
+                        <thead><tr><th>Results will appear here</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="sql-sidebar">
+                <div class="sidebar-box">
+                    <div class="sidebar-title">Database Structure</div>
+                    <div class="schema-list" id="schema-list">
+                        </div>
+                </div>
+                
+                <div class="sidebar-box" style="flex: 0 0 40%;">
+                    <div class="sidebar-title">History</div>
+                    <div class="history-list" id="history-list">
+                        </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="create-view" class="hidden">
@@ -344,40 +352,136 @@
     </div>
 
     <script>
-        // --- DATA STATE ---
         let events = [];
         let categories = [ { id: 'default', name: 'General', color: '#6b7280' } ];
+        let queryHistory = [];
 
-        // --- APP STATE ---
         let state = { 
-            view: 'month', 
-            currentDate: new Date(), 
-            yearMode: 'list',
-            activeCategories: new Set(['default']),
-            activePriorities: new Set(['high', 'medium', 'low']),
-            sortBy: 'priority_desc',
-            editingEventId: null,
-            editingCategoryId: null,
-            categoryPendingDelete: null,
-            filterPanelOpen: false
+            view: 'month', currentDate: new Date(), yearMode: 'list',
+            activeCategories: new Set(['default']), activePriorities: new Set(['high', 'medium', 'low']), sortBy: 'priority_desc',
+            editingEventId: null, editingCategoryId: null, categoryPendingDelete: null, filterPanelOpen: false
         };
 
-        // --- FETCH ONLINE HOLIDAYS ---
+        // --- SQL LOGIC ---
+        function setSqlQuery(q) {
+            document.getElementById('sql-input').value = q;
+            runQuery();
+        }
+
+        function runQuery() {
+            const query = document.getElementById('sql-input').value;
+            const tableHead = document.querySelector('#sql-results thead');
+            const tableBody = document.querySelector('#sql-results tbody');
+            
+            // 1. Prepare Data
+            const flatEvents = events.map(e => {
+                const cat = categories.find(c => String(c.id) === String(e.categoryId)) || {name:'Unknown', color:'#ccc'};
+                const d = new Date(e.date + 'T00:00:00'); 
+                const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                return {
+                    id: e.id, name: e.name, date: e.date, priority: e.priority, description: e.description,
+                    category_name: cat.name, category_color: cat.color,
+                    day_name: days[d.getDay()], month_name: months[d.getMonth()], year: d.getFullYear(), day: d.getDate()
+                };
+            });
+
+            // 2. Calendar Table
+            const calendarDates = [];
+            const startYear = new Date().getFullYear() - 2;
+            const endYear = new Date().getFullYear() + 2;
+            const start = new Date(startYear, 0, 1);
+            const end = new Date(endYear, 11, 31);
+            const daysArr = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                calendarDates.push({ date: formatDateSafe(d), day_name: daysArr[d.getDay()], year: d.getFullYear() });
+            }
+
+            try {
+                // DB Init
+                if (!alasql.databases.cal) alasql('CREATE DATABASE cal');
+                alasql('USE cal');
+
+                // Reload Tables
+                alasql('DROP TABLE IF EXISTS events');
+                alasql('CREATE TABLE events');
+                alasql('SELECT * INTO events FROM ?', [flatEvents]);
+
+                alasql('DROP TABLE IF EXISTS dates');
+                alasql('CREATE TABLE dates');
+                alasql('SELECT * INTO dates FROM ?', [calendarDates]);
+
+                // Update Schema UI
+                renderSchema();
+
+                // Run Query
+                const res = alasql(query);
+                
+                // Add to History if success
+                if(query.trim() && !queryHistory.includes(query)) {
+                    queryHistory.unshift(query); // Add to top
+                    if(queryHistory.length > 20) queryHistory.pop();
+                    renderHistory();
+                }
+
+                // Render Table
+                tableHead.innerHTML = ''; tableBody.innerHTML = '';
+                if (!res || res.length === 0) {
+                    tableBody.innerHTML = '<tr><td style="padding:10px; color:#666;">No results found.</td></tr>';
+                    return;
+                }
+                const headers = Object.keys(res[0]);
+                let headRow = '<tr>'; headers.forEach(h => headRow += `<th>${h}</th>`); headRow += '</tr>';
+                tableHead.innerHTML = headRow;
+                res.forEach(row => {
+                    let tr = '<tr>'; headers.forEach(h => tr += `<td>${row[h]}</td>`); tr += '</tr>';
+                    tableBody.innerHTML += tr;
+                });
+
+            } catch (err) {
+                tableHead.innerHTML = '<tr><th>Error</th></tr>';
+                tableBody.innerHTML = `<tr><td style="color:red;">${err.message}</td></tr>`;
+            }
+        }
+
+        function renderSchema() {
+            const container = document.getElementById('schema-list');
+            container.innerHTML = `
+                <div class="schema-table">
+                    <div class="schema-table-name">Table: events</div>
+                    <div class="schema-col">id, name, date, priority, description, category_name, day_name, month_name, year</div>
+                </div>
+                <div class="schema-table">
+                    <div class="schema-table-name">Table: dates</div>
+                    <div class="schema-col">date, day_name, year</div>
+                </div>
+            `;
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            container.innerHTML = '';
+            queryHistory.forEach(q => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerText = q;
+                div.title = q;
+                div.onclick = () => setSqlQuery(q);
+                container.appendChild(div);
+            });
+        }
+
+        // --- FETCH HOLIDAYS ---
         async function fetchHolidays() {
             const statusEl = document.getElementById('loading-status');
             statusEl.innerText = "Fetching holidays...";
-            
             const years = [2025, 2026, 2027];
             let newHolidaysCount = 0;
             let holidayCat = categories.find(c => c.name === 'Public Holiday');
             let holidayCatId = holidayCat ? holidayCat.id : 'holidays_' + Date.now();
-            
-            if (!holidayCat) {
-                categories.push({ id: holidayCatId, name: 'Public Holiday', color: '#ef4444' });
-                state.activeCategories.add(holidayCatId);
-            } else {
-                if (!state.activeCategories.has(holidayCatId)) state.activeCategories.add(holidayCatId);
-            }
+            if (!holidayCat) { categories.push({ id: holidayCatId, name: 'Public Holiday', color: '#ef4444' }); state.activeCategories.add(holidayCatId); } 
+            else { if (!state.activeCategories.has(holidayCatId)) state.activeCategories.add(holidayCatId); }
 
             try {
                 for (let year of years) {
@@ -387,23 +491,16 @@
                     data.forEach(h => {
                         const uniqueId = `hol_${h.date}_${h.localName.replace(/\s/g, '')}`;
                         if (!events.find(ev => ev.id === uniqueId)) {
-                            events.push({
-                                id: uniqueId, name: h.localName, date: h.date, categoryId: holidayCatId,
-                                priority: 'high', description: `${h.name} (Public Holiday)`
-                            });
+                            events.push({ id: uniqueId, name: h.localName, date: h.date, categoryId: holidayCatId, priority: 'high', description: `${h.name} (Public Holiday)` });
                             newHolidaysCount++;
                         }
                     });
                 }
                 statusEl.innerText = "";
-                if(newHolidaysCount > 0) {
-                    renderFilters(); 
-                    render();
-                }
+                if(newHolidaysCount > 0) { renderFilters(); render(); }
             } catch (err) { statusEl.innerText = "Offline mode"; }
         }
         
-        // --- HELPER: FORMAT DATE YYYY-MM-DD (Safe) ---
         function formatDateSafe(date) {
             const y = date.getFullYear();
             const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -411,83 +508,48 @@
             return `${y}-${m}-${d}`;
         }
 
-        // --- FILTER & SORT LOGIC ---
+        // --- FILTER & SORT ---
         function toggleFilterPanel() {
             state.filterPanelOpen = !state.filterPanelOpen;
             const panel = document.getElementById('filter-panel');
             const btn = document.getElementById('btn-toggle-filters');
-            if(state.filterPanelOpen) {
-                panel.classList.remove('hidden');
-                btn.classList.add('btn-active');
-            } else {
-                panel.classList.add('hidden');
-                btn.classList.remove('btn-active');
-            }
+            if(state.filterPanelOpen) { panel.classList.remove('hidden'); btn.classList.add('btn-active'); } 
+            else { panel.classList.add('hidden'); btn.classList.remove('btn-active'); }
         }
-
         function renderFilters() {
             const container = document.getElementById('filter-cat-container');
             container.innerHTML = '';
-            
             categories.forEach(cat => {
                 const chip = document.createElement('div');
                 const isActive = state.activeCategories.has(String(cat.id));
                 chip.className = `chip ${isActive ? 'active' : ''}`;
                 chip.innerHTML = `<span class="chip-dot" style="background:${cat.color}"></span>${cat.name}`;
-                if(isActive) {
-                    chip.style.borderColor = cat.color;
-                    chip.style.color = cat.color;
-                }
-                
+                if(isActive) { chip.style.borderColor = cat.color; chip.style.color = cat.color; }
                 chip.onclick = () => toggleCategoryFilter(String(cat.id));
                 container.appendChild(chip);
             });
         }
-
         function toggleCategoryFilter(id) {
             const idStr = String(id);
             if (state.activeCategories.has(idStr)) state.activeCategories.delete(idStr);
             else state.activeCategories.add(idStr);
-            renderFilters();
-            render();
+            renderFilters(); render();
         }
-
         function toggleAllCategories() {
             const allIds = categories.map(c => String(c.id));
-            if (state.activeCategories.size === allIds.length) {
-                state.activeCategories.clear();
-            } else {
-                state.activeCategories = new Set(allIds);
-            }
-            renderFilters();
-            render();
+            if (state.activeCategories.size === allIds.length) state.activeCategories.clear();
+            else state.activeCategories = new Set(allIds);
+            renderFilters(); render();
         }
-
         function togglePrio(prio, el) {
-            if (state.activePriorities.has(prio)) {
-                state.activePriorities.delete(prio);
-                el.classList.remove('active');
-            } else {
-                state.activePriorities.add(prio);
-                el.classList.add('active');
-            }
+            if (state.activePriorities.has(prio)) { state.activePriorities.delete(prio); el.classList.remove('active'); }
+            else { state.activePriorities.add(prio); el.classList.add('active'); }
             render();
         }
-
-        function setSort(val) {
-            state.sortBy = val;
-            render();
-        }
-
-        function setYearMode(mode) {
-            state.yearMode = mode;
-            render();
-        }
-
-        function getCategoryName(id) {
-            const cat = categories.find(c => String(c.id) === String(id));
-            return cat ? cat.name : '';
-        }
+        function setSort(val) { state.sortBy = val; render(); }
+        function setYearMode(mode) { state.yearMode = mode; render(); }
+        function getCategoryName(id) { const cat = categories.find(c => String(c.id) === String(id)); return cat ? cat.name : ''; }
+        function getCategoryColor(catId) { const cat = categories.find(c => String(c.id) === String(catId)); return cat ? cat.color : '#6b7280'; }
 
         function getFilteredAndSortedEvents() {
             let filtered = events.filter(ev => {
@@ -495,34 +557,17 @@
                 const prioMatch = state.activePriorities.has(ev.priority);
                 return catMatch && prioMatch;
             });
-
             const prioMap = { 'high': 3, 'medium': 2, 'low': 1 };
-            
             filtered.sort((a, b) => {
-                const prioA = prioMap[a.priority] || 0;
-                const prioB = prioMap[b.priority] || 0;
-                const catA = getCategoryName(a.categoryId).toLowerCase();
-                const catB = getCategoryName(b.categoryId).toLowerCase();
-
+                const prioA = prioMap[a.priority] || 0; const prioB = prioMap[b.priority] || 0;
+                const catA = getCategoryName(a.categoryId).toLowerCase(); const catB = getCategoryName(b.categoryId).toLowerCase();
                 switch(state.sortBy) {
-                    case 'category_asc':
-                        if(catA !== catB) return catA.localeCompare(catB);
-                        return prioB - prioA;
-                    case 'priority_desc': 
-                        if(prioA !== prioB) return prioB - prioA;
-                        return catA.localeCompare(catB);
-                    case 'priority_asc':  
-                        if(prioA !== prioB) return prioA - prioB;
-                        return catA.localeCompare(catB);
-                    case 'date_asc':      
-                        if(a.date !== b.date) return new Date(a.date) - new Date(b.date);
-                        return prioB - prioA;
-                    case 'date_desc':     
-                        if(a.date !== b.date) return new Date(b.date) - new Date(a.date);
-                        return prioB - prioA;
-                    case 'name_asc':      
-                        if(a.name !== b.name) return a.name.localeCompare(b.name);
-                        return prioB - prioA;
+                    case 'category_asc': if(catA !== catB) return catA.localeCompare(catB); return prioB - prioA;
+                    case 'priority_desc': if(prioA !== prioB) return prioB - prioA; return catA.localeCompare(catB);
+                    case 'priority_asc': if(prioA !== prioB) return prioA - prioB; return catA.localeCompare(catB);
+                    case 'date_asc': if(a.date !== b.date) return new Date(a.date) - new Date(b.date); return prioB - prioA;
+                    case 'date_desc': if(a.date !== b.date) return new Date(b.date) - new Date(a.date); return prioB - prioA;
+                    case 'name_asc': if(a.name !== b.name) return a.name.localeCompare(b.name); return prioB - prioA;
                     default: return 0;
                 }
             });
@@ -531,33 +576,60 @@
 
         function getWeeklyListHTML(items) {
             if(!items || items.length === 0) return `<div style="color:#9ca3af; font-size:0.75rem; text-align:center; padding:5px;">No events</div>`;
-            
             return items.map(ev => {
                 const color = getCategoryColor(ev.categoryId);
-                const day = ev.date.split('-')[2]; // Get DD
-                return `<div class="calendar-item prio-${ev.priority}" 
-                             style="background-color:${color}; display: flex; justify-content: space-between; align-items: center;" 
-                             onclick="openEventForm('${ev.id}')" 
-                             title="${ev.name}">
-                             <span style="overflow: hidden; text-overflow: ellipsis; flex: 1;">${ev.name}</span>
-                             <span style="opacity: 0.8; font-size: 0.9em; margin-left: 5px; flex-shrink: 0;">${day}</span>
-                        </div>`;
+                const day = ev.date.split('-')[2];
+                return `<div class="calendar-item prio-${ev.priority}" style="background-color:${color}; display: flex; justify-content: space-between; align-items: center;" onclick="openEventForm('${ev.id}')" title="${ev.name}"><span style="overflow: hidden; text-overflow: ellipsis; flex: 1;">${ev.name}</span><span style="opacity: 0.8; font-size: 0.9em; margin-left: 5px; flex-shrink: 0;">${day}</span></div>`;
             }).join('');
         }
 
-        // --- CORE RENDER ---
+        function createEventElement(item) {
+            const color = getCategoryColor(item.categoryId);
+            const el = document.createElement('div');
+            el.className = `calendar-item prio-${item.priority || 'low'}`;
+            el.innerText = item.name;
+            el.title = `${item.name} (${item.priority})`;
+            el.style.backgroundColor = color;
+            el.onclick = (e) => { e.stopPropagation(); openEventForm(item.id); };
+            return el;
+        }
+
+        function getStartOfWeek(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day;
+            return new Date(d.setDate(diff));
+        }
+
         function render() {
             const finalEvents = getFilteredAndSortedEvents();
-
             const options = { year: 'numeric', month: 'long' };
             if (state.view === 'week') options.day = 'numeric';
             document.getElementById('current-date-display').innerText = state.currentDate.toLocaleDateString('en-US', options);
 
-            document.querySelectorAll('.controls .btn').forEach(b => {
-                if(b.id && b.id.startsWith('btn-')) b.classList.remove('btn-primary');
-            });
-            if(document.getElementById(`btn-${state.view}`)) 
-                document.getElementById(`btn-${state.view}`).classList.add('btn-primary');
+            document.querySelectorAll('.controls .btn').forEach(b => { if(b.id && b.id.startsWith('btn-')) b.classList.remove('btn-primary'); });
+            if(document.getElementById(`btn-${state.view}`)) document.getElementById(`btn-${state.view}`).classList.add('btn-primary');
+
+            const container = document.getElementById('calendar-container');
+            const viewEl = document.getElementById('calendar-view');
+            const sqlView = document.getElementById('sql-view');
+            const createView = document.getElementById('create-view');
+
+            if(state.view === 'sql') {
+                container.style.display = 'none';
+                viewEl.classList.add('hidden');
+                sqlView.classList.remove('hidden');
+                createView.classList.add('hidden');
+                document.getElementById('year-controls').classList.add('hidden');
+                // Init structure for SQL view on load
+                runQuery(); 
+                return;
+            } else {
+                container.style.display = 'grid'; 
+                viewEl.classList.remove('hidden');
+                sqlView.classList.add('hidden');
+                createView.classList.add('hidden');
+            }
 
             if (state.view === 'year') {
                 document.getElementById('year-controls').classList.remove('hidden');
@@ -567,9 +639,8 @@
                 document.getElementById('year-controls').classList.add('hidden');
             }
 
-            const container = document.getElementById('calendar-container');
             container.innerHTML = '';
-            document.getElementById('calendar-view').className = `view-${state.view}`;
+            viewEl.className = `view-${state.view}`;
             container.style = ''; 
 
             if (state.view === 'month') {
@@ -589,24 +660,16 @@
 
         function renderMonth(data, container) {
             ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(d => {
-                const el = document.createElement('div');
-                el.className = 'day-cell header';
-                el.innerText = d;
-                container.appendChild(el);
+                const el = document.createElement('div'); el.className = 'day-cell header'; el.innerText = d; container.appendChild(el);
             });
-            const statsHeader = document.createElement('div');
-            statsHeader.className = 'day-cell header';
-            statsHeader.innerText = 'Tasks';
-            container.appendChild(statsHeader);
+            const statsHeader = document.createElement('div'); statsHeader.className = 'day-cell header'; statsHeader.innerText = 'Tasks'; container.appendChild(statsHeader);
 
             const year = state.currentDate.getFullYear();
             const month = state.currentDate.getMonth();
             const firstDayIndex = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-
             const totalSlots = firstDayIndex + daysInMonth;
             const numWeeks = Math.ceil(totalSlots / 7);
-            
             container.style.gridTemplateRows = `auto repeat(${numWeeks}, 1fr)`;
 
             for (let i = 0; i < firstDayIndex; i++) container.appendChild(document.createElement('div'));
@@ -614,83 +677,47 @@
             for (let i = 1; i <= daysInMonth; i++) {
                 const dateStr = formatDateSafe(new Date(year, month, i));
                 const items = data.filter(ev => ev.date === dateStr);
-                const el = document.createElement('div');
-                el.className = 'day-cell';
-                el.innerHTML = `<div class="day-number">${i}</div>`;
+                const el = document.createElement('div'); el.className = 'day-cell'; el.innerHTML = `<div class="day-number">${i}</div>`;
                 items.forEach(item => el.appendChild(createEventElement(item)));
                 container.appendChild(el);
 
                 const dayOfWeek = new Date(year, month, i).getDay();
-                
                 if (dayOfWeek === 6 || i === daysInMonth) {
                     if (i === daysInMonth && dayOfWeek !== 6) {
                         for (let k = 0; k < (6 - dayOfWeek); k++) {
-                            const empty = document.createElement('div');
-                            empty.className = 'day-cell not-current-month';
-                            container.appendChild(empty);
+                            const empty = document.createElement('div'); empty.className = 'day-cell not-current-month'; container.appendChild(empty);
                         }
                     }
-
-                    // --- CORRECTED LOGIC: Filter Master List by Range ---
                     const currentDt = new Date(year, month, i);
                     const weekEnd = new Date(currentDt);
-                    const weekStart = new Date(currentDt);
-                    weekStart.setDate(currentDt.getDate() - dayOfWeek); // Go back to Sunday
-                    
-                    const sStr = formatDateSafe(weekStart);
-                    const eStr = formatDateSafe(weekEnd);
-                    
-                    // Filter sorted data by date range
+                    const weekStart = new Date(currentDt); weekStart.setDate(currentDt.getDate() - dayOfWeek);
+                    const sStr = formatDateSafe(weekStart); const eStr = formatDateSafe(weekEnd);
                     const currentRowEvents = data.filter(ev => ev.date >= sStr && ev.date <= eStr);
-
-                    const statCell = document.createElement('div');
-                    statCell.className = 'stats-cell';
-                    statCell.innerHTML = getWeeklyListHTML(currentRowEvents);
-                    container.appendChild(statCell);
+                    const statCell = document.createElement('div'); statCell.className = 'stats-cell'; statCell.innerHTML = getWeeklyListHTML(currentRowEvents); container.appendChild(statCell);
                 }
             }
         }
 
         function renderWeek(data, container) {
             const start = getStartOfWeek(state.currentDate);
-            const end = new Date(start);
-            end.setDate(end.getDate() + 6);
-            
-            const sStr = formatDateSafe(start);
-            const eStr = formatDateSafe(end);
-            
-            // Filter sorted data for whole week
+            const end = new Date(start); end.setDate(end.getDate() + 6);
+            const sStr = formatDateSafe(start); const eStr = formatDateSafe(end);
             const weekEvents = data.filter(ev => ev.date >= sStr && ev.date <= eStr);
 
             for (let i = 0; i < 7; i++) {
-                const d = new Date(start);
-                d.setDate(d.getDate() + i);
-                const el = document.createElement('div');
-                el.className = 'day-cell header';
-                el.innerText = d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
-                container.appendChild(el);
+                const d = new Date(start); d.setDate(d.getDate() + i);
+                const el = document.createElement('div'); el.className = 'day-cell header'; el.innerText = d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }); container.appendChild(el);
             }
-            const statsHeader = document.createElement('div');
-            statsHeader.className = 'day-cell header';
-            statsHeader.innerText = 'Tasks';
-            container.appendChild(statsHeader);
+            const statsHeader = document.createElement('div'); statsHeader.className = 'day-cell header'; statsHeader.innerText = 'Tasks'; container.appendChild(statsHeader);
 
             for (let i = 0; i < 7; i++) {
-                const d = new Date(start);
-                d.setDate(d.getDate() + i);
+                const d = new Date(start); d.setDate(d.getDate() + i);
                 const dateStr = formatDateSafe(d);
                 const items = data.filter(ev => ev.date === dateStr);
-
-                const el = document.createElement('div');
-                el.className = 'day-cell';
-                items.forEach(item => el.appendChild(createEventElement(item)));
-                container.appendChild(el);
+                const el = document.createElement('div'); el.className = 'day-cell';
+                items.forEach(item => el.appendChild(createEventElement(item))); container.appendChild(el);
             }
-            
-            const statCell = document.createElement('div');
-            statCell.className = 'stats-cell';
-            statCell.innerHTML = getWeeklyListHTML(weekEvents);
-            container.appendChild(statCell);
+            const statCell = document.createElement('div'); statCell.className = 'stats-cell'; statCell.innerHTML = getWeeklyListHTML(weekEvents); container.appendChild(statCell);
         }
 
         function renderYearList(data, container) {
@@ -699,51 +726,31 @@
                 const monthDate = new Date(year, m, 1);
                 const monthPrefix = `${year}-${String(m+1).padStart(2,'0')}`;
                 const monthEvents = data.filter(ev => ev.date.startsWith(monthPrefix));
-
-                const card = document.createElement('div');
-                card.className = 'month-card';
+                const card = document.createElement('div'); card.className = 'month-card';
                 let html = `<h3>${monthDate.toLocaleDateString('en-US', {month:'long'})}</h3><div class="month-event-list">`;
-                
-                if (monthEvents.length === 0) {
-                    html += `<div style="color:#9ca3af; font-size:0.8rem; text-align:center; padding-top:10px;">No events</div>`;
-                } else {
-                    monthEvents.forEach(ev => {
+                if (monthEvents.length === 0) html += `<div style="color:#9ca3af; font-size:0.8rem; text-align:center; padding-top:10px;">No events</div>`;
+                else monthEvents.forEach(ev => {
                         const color = getCategoryColor(ev.categoryId);
                         const day = ev.date.split('-')[2];
-                        html += `
-                        <div class="year-event-item" style="background-color: ${color}" onclick="openEventForm('${ev.id}')">
-                            <span><span class="priority-dot dot-${ev.priority}"></span> ${ev.name}</span>
-                            <span style="opacity:0.8">${day}</span>
-                        </div>`;
+                        html += `<div class="year-event-item" style="background-color: ${color}" onclick="openEventForm('${ev.id}')"><span><span class="priority-dot dot-${ev.priority}"></span> ${ev.name}</span><span style="opacity:0.8">${day}</span></div>`;
                     });
-                }
-                html += `</div>`;
-                card.innerHTML = html;
-                container.appendChild(card);
+                html += `</div>`; card.innerHTML = html; container.appendChild(card);
             }
         }
 
         function renderYearGrid(data, container) {
             const year = state.currentDate.getFullYear();
             for (let m = 0; m < 12; m++) {
-                const monthDiv = document.createElement('div');
-                monthDiv.className = 'month-card';
-                monthDiv.style.display = 'block';
+                const monthDiv = document.createElement('div'); monthDiv.className = 'month-card'; monthDiv.style.display = 'block';
                 const monthDate = new Date(year, m, 1);
-                
                 let html = `<h3>${monthDate.toLocaleDateString('en-US', {month:'long'})}</h3><div class="mini-grid">`;
                 ['S','M','T','W','T','F','S'].forEach(d => html += `<div class="mini-day header-day">${d}</div>`);
-                
-                const startDay = monthDate.getDay();
-                const daysInMonth = new Date(year, m+1, 0).getDate();
+                const startDay = monthDate.getDay(); const daysInMonth = new Date(year, m+1, 0).getDate();
                 for(let b=0; b<startDay; b++) html += `<div></div>`;
-                
                 for(let d=1; d<=daysInMonth; d++) {
                     const dateStr = `${year}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                     const items = data.filter(ev => ev.date === dateStr);
-                    let style = '';
-                    let cssClass = '';
-                    
+                    let style = ''; let cssClass = '';
                     if(items.length > 0) {
                         const highPrio = items.filter(i => i.priority === 'high');
                         if(highPrio.length > 0) {
@@ -751,40 +758,14 @@
                             if(uniqueColors.length === 1) style = `background-color: ${uniqueColors[0]}; color: white;`;
                             else style = `background: linear-gradient(135deg, ${uniqueColors.join(', ')}); color: white;`;
                             cssClass = 'has-item-bold';
-                        } else {
-                            style = `border: 2px solid var(--primary); color: var(--text);`;
-                            cssClass = 'has-item-bold';
-                        }
+                        } else { style = `border: 2px solid var(--primary); color: var(--text);`; cssClass = 'has-item-bold'; }
                     }
                     html += `<div class="mini-day ${cssClass}" style="${style}">${d}</div>`;
                 }
-                html += `</div>`;
-                monthDiv.innerHTML = html;
-                container.appendChild(monthDiv);
+                html += `</div>`; monthDiv.innerHTML = html; container.appendChild(monthDiv);
             }
         }
 
-        // --- SHARED HELPERS ---
-        function getStartOfWeek(date) {
-            const d = new Date(date);
-            const day = d.getDay();
-            const diff = d.getDate() - day;
-            return new Date(d.setDate(diff));
-        }
-        function createEventElement(item) {
-            const color = getCategoryColor(item.categoryId);
-            const el = document.createElement('div');
-            el.className = `calendar-item prio-${item.priority || 'low'}`;
-            el.innerText = item.name;
-            el.title = `${item.name} (${item.priority})`;
-            el.style.backgroundColor = color;
-            el.onclick = (e) => { e.stopPropagation(); openEventForm(item.id); };
-            return el;
-        }
-        function getCategoryColor(catId) {
-            const cat = categories.find(c => String(c.id) === String(catId));
-            return cat ? cat.color : '#6b7280';
-        }
         function setView(v) { state.view = v; render(); }
         function changeOffset(dir) {
             if (state.view === 'month') state.currentDate.setMonth(state.currentDate.getMonth() + dir);
@@ -794,96 +775,25 @@
             render();
         }
         function updateCategoryDropdowns() {
-            const s = document.getElementById('inp-category');
-            const v = s.value;
-            s.innerHTML = '';
-            categories.forEach(cat => {
-                const opt = document.createElement('option'); opt.value = cat.id; opt.innerText = cat.name; s.appendChild(opt);
-            });
+            const s = document.getElementById('inp-category'); const v = s.value; s.innerHTML = '';
+            categories.forEach(cat => { const opt = document.createElement('option'); opt.value = cat.id; opt.innerText = cat.name; s.appendChild(opt); });
             s.value = [...s.options].some(o=>o.value==v) ? v : 'default';
             renderFilters();
         }
-
-        // --- EVENT HANDLERS ---
-        function handleItemSubmit(e) {
-            e.preventDefault();
-            const eventData = {
-                id: state.editingEventId ? state.editingEventId : Date.now(),
-                name: document.getElementById('inp-name').value,
-                description: document.getElementById('inp-desc').value,
-                categoryId: document.getElementById('inp-category').value,
-                date: document.getElementById('inp-date').value,
-                priority: document.getElementById('inp-priority').value 
-            };
-            if (state.editingEventId) {
-                const index = events.findIndex(ev => ev.id === state.editingEventId);
-                if(index !== -1) events[index] = eventData;
-            } else { events.push(eventData); }
-            showCalendarPage();
-        }
-        function handleCategorySubmit(e) {
-            e.preventDefault();
-            const name = document.getElementById('cat-name').value;
-            const color = document.getElementById('cat-color').value;
-            if (state.editingCategoryId) {
-                const cat = categories.find(c => c.id === state.editingCategoryId);
-                if(cat) { cat.name = name; cat.color = color; }
-            } else {
-                const newId = String(Date.now()); // FORCE STRING
-                categories.push({ id: newId, name, color });
-                state.activeCategories.add(newId);
-            }
-            clearCategoryForm(); toggleCategoryModal(false); updateCategoryDropdowns(); render();
-        }
-        function confirmCategoryDelete(action) {
-            const id = state.categoryPendingDelete;
-            if(!id) return;
-            const idStr = String(id);
-            if (action === 'move') events.forEach(ev => { if (String(ev.categoryId) === idStr) ev.categoryId = 'default'; });
-            else if (action === 'delete') events = events.filter(ev => String(ev.categoryId) !== idStr);
-            categories = categories.filter(c => String(c.id) !== idStr);
-            if(state.activeCategories.has(idStr)) state.activeCategories.delete(idStr);
-            closeDeleteModal(); updateCategoryDropdowns(); render();
-        }
-        
-        function downloadData() {
-            const data = { events, categories, savedAt: new Date().toISOString() };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = `calendar_backup.json`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        }
+        function handleItemSubmit(e) { e.preventDefault(); const eventData = { id: state.editingEventId ? state.editingEventId : Date.now(), name: document.getElementById('inp-name').value, description: document.getElementById('inp-desc').value, categoryId: document.getElementById('inp-category').value, date: document.getElementById('inp-date').value, priority: document.getElementById('inp-priority').value }; if (state.editingEventId) { const index = events.findIndex(ev => ev.id === state.editingEventId); if(index !== -1) events[index] = eventData; } else { events.push(eventData); } showCalendarPage(); }
+        function handleCategorySubmit(e) { e.preventDefault(); const name = document.getElementById('cat-name').value; const color = document.getElementById('cat-color').value; if (state.editingCategoryId) { const cat = categories.find(c => c.id === state.editingCategoryId); if(cat) { cat.name = name; cat.color = color; } } else { const newId = String(Date.now()); categories.push({ id: newId, name, color }); state.activeCategories.add(newId); } clearCategoryForm(); toggleCategoryModal(false); updateCategoryDropdowns(); render(); }
+        function confirmCategoryDelete(action) { const id = state.categoryPendingDelete; if(!id) return; const idStr = String(id); if (action === 'move') events.forEach(ev => { if (String(ev.categoryId) === idStr) ev.categoryId = 'default'; }); else if (action === 'delete') events = events.filter(ev => String(ev.categoryId) !== idStr); categories = categories.filter(c => String(c.id) !== idStr); if(state.activeCategories.has(idStr)) state.activeCategories.delete(idStr); closeDeleteModal(); updateCategoryDropdowns(); render(); }
+        function downloadData() { const data = { events, categories, savedAt: new Date().toISOString() }; const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `calendar_backup.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
         function triggerFileUpload() { document.getElementById('file-input').click(); }
-        function handleFileSelect(event) {
-            const file = event.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const json = JSON.parse(e.target.result);
-                    if (json.events && json.categories) {
-                        events = json.events; categories = json.categories;
-                        // Ensure all IDs loaded are strings in the active set
-                        state.activeCategories = new Set(categories.map(c => String(c.id)));
-                        alert("Data loaded!"); updateCategoryDropdowns(); render();
-                    }
-                } catch (err) { alert("Error reading file."); }
-            }; reader.readAsText(file); event.target.value = '';
-        }
-        function openEventForm(id){ state.editingEventId = id; document.getElementById('create-view').classList.remove('hidden'); document.getElementById('calendar-view').classList.add('hidden'); if(id){const ev=events.find(e=>e.id==id); document.getElementById('inp-name').value=ev.name; document.getElementById('inp-date').value=ev.date; document.getElementById('inp-priority').value=ev.priority; document.getElementById('inp-category').value=ev.categoryId; document.getElementById('inp-desc').value=ev.description; document.getElementById('btn-delete-event').classList.remove('hidden');}else{document.getElementById('create-form').reset(); document.getElementById('inp-date').value=new Date().toISOString().split('T')[0]; document.getElementById('btn-delete-event').classList.add('hidden');} }
+        function handleFileSelect(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const json = JSON.parse(e.target.result); if (json.events && json.categories) { events = json.events; categories = json.categories; state.activeCategories = new Set(categories.map(c => String(c.id))); alert("Data loaded!"); updateCategoryDropdowns(); render(); } } catch (err) { alert("Error reading file."); } }; reader.readAsText(file); event.target.value = ''; }
+        function openEventForm(id){ state.editingEventId = id; document.getElementById('create-view').classList.remove('hidden'); document.getElementById('calendar-view').classList.add('hidden'); document.getElementById('sql-view').classList.add('hidden'); if(id){const ev=events.find(e=>e.id==id); document.getElementById('inp-name').value=ev.name; document.getElementById('inp-date').value=ev.date; document.getElementById('inp-priority').value=ev.priority; document.getElementById('inp-category').value=ev.categoryId; document.getElementById('inp-desc').value=ev.description; document.getElementById('btn-delete-event').classList.remove('hidden');}else{document.getElementById('create-form').reset(); document.getElementById('inp-date').value=new Date().toISOString().split('T')[0]; document.getElementById('btn-delete-event').classList.add('hidden');} }
         function deleteEvent(){ if(!state.editingEventId)return; if(confirm("Delete event?")){events=events.filter(e=>e.id!==state.editingEventId); showCalendarPage();} }
         function showCalendarPage(){ document.getElementById('create-view').classList.add('hidden'); document.getElementById('calendar-view').classList.remove('hidden'); render(); }
         function promptDeleteCategory(id){ state.categoryPendingDelete=id; document.getElementById('delete-modal-overlay').classList.remove('hidden'); }
         function closeDeleteModal(){ state.categoryPendingDelete=null; document.getElementById('delete-modal-overlay').classList.add('hidden'); }
         function toggleCategoryModal(s){ const m=document.getElementById('modal-overlay'); if(s){m.classList.remove('hidden'); clearCategoryForm(); renderCategoryList();}else{m.classList.add('hidden');} }
         function clearCategoryForm(){ state.editingCategoryId=null; document.getElementById('cat-name').value=''; document.getElementById('cat-color').value='#3b82f6'; document.getElementById('cat-color-text').value='#3b82f6'; document.getElementById('btn-cat-save').innerText='Add'; document.getElementById('btn-cat-clear').classList.add('hidden'); }
-        function renderCategoryList(){
-            const l=document.getElementById('cat-list-container'); l.innerHTML='';
-            categories.forEach(c=>{
-                const d=document.createElement('div'); d.className='cat-item';
-                d.innerHTML=`<div onclick="loadCat('${c.id}')"><span class="cat-dot" style="background:${c.color}"></span>${c.name}</div>${c.id!=='default'?`<div class="delete-icon" onclick="promptDeleteCategory('${c.id}')">&times;</div>`:''}`;
-                l.appendChild(d);
-            });
-        }
+        function renderCategoryList(){ const l=document.getElementById('cat-list-container'); l.innerHTML=''; categories.forEach(c=>{ const d=document.createElement('div'); d.className='cat-item'; d.innerHTML=`<div onclick="loadCat('${c.id}')"><span class="cat-dot" style="background:${c.color}"></span>${c.name}</div>${c.id!=='default'?`<div class="delete-icon" onclick="promptDeleteCategory('${c.id}')">&times;</div>`:''}`; l.appendChild(d); }); }
         function loadCat(id){ const c=categories.find(x=>x.id==id); if(!c)return; state.editingCategoryId=id; document.getElementById('cat-name').value=c.name; document.getElementById('cat-color').value=c.color; document.getElementById('cat-color-text').value=c.color; document.getElementById('btn-cat-save').innerText='Update'; document.getElementById('btn-cat-clear').classList.remove('hidden'); }
         window.loadCat = loadCat;
 
