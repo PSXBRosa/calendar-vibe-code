@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar: Filter Fix</title>
+    <title>Calendar: Advanced Sorting</title>
     <style>
         :root {
             --bg: #f3f4f6;
@@ -279,6 +279,7 @@
                 <select class="input-select" onchange="setSort(this.value)" style="width: 100%;">
                     <option value="priority_desc" selected>Priority (High-Low)</option>
                     <option value="priority_asc">Priority (Low-High)</option>
+                    <option value="category_asc">Category (A-Z)</option>
                     <option value="date_asc">Date (Oldest)</option>
                     <option value="date_desc">Date (Newest)</option>
                     <option value="name_asc">Name (A-Z)</option>
@@ -407,7 +408,6 @@
             
             categories.forEach(cat => {
                 const chip = document.createElement('div');
-                // Ensure Strict String Comparison for ID match
                 const isActive = state.activeCategories.has(String(cat.id));
                 chip.className = `chip ${isActive ? 'active' : ''}`;
                 chip.innerHTML = `<span class="chip-dot" style="background:${cat.color}"></span>${cat.name}`;
@@ -461,9 +461,13 @@
             render();
         }
 
+        function getCategoryName(id) {
+            const cat = categories.find(c => String(c.id) === String(id));
+            return cat ? cat.name : '';
+        }
+
         function getFilteredAndSortedEvents() {
             let filtered = events.filter(ev => {
-                // FORCE STRING COMPARISON
                 const catMatch = state.activeCategories.has(String(ev.categoryId));
                 const prioMatch = state.activePriorities.has(ev.priority);
                 return catMatch && prioMatch;
@@ -472,12 +476,42 @@
             const prioMap = { 'high': 3, 'medium': 2, 'low': 1 };
             
             filtered.sort((a, b) => {
+                const prioA = prioMap[a.priority] || 0;
+                const prioB = prioMap[b.priority] || 0;
+                const catA = getCategoryName(a.categoryId).toLowerCase();
+                const catB = getCategoryName(b.categoryId).toLowerCase();
+
                 switch(state.sortBy) {
-                    case 'priority_desc': return prioMap[b.priority] - prioMap[a.priority];
-                    case 'priority_asc':  return prioMap[a.priority] - prioMap[b.priority];
-                    case 'date_asc':      return new Date(a.date) - new Date(b.date);
-                    case 'date_desc':     return new Date(b.date) - new Date(a.date);
-                    case 'name_asc':      return a.name.localeCompare(b.name);
+                    case 'category_asc':
+                        // Primary: Cat A-Z
+                        if(catA !== catB) return catA.localeCompare(catB);
+                        // Secondary: Priority High-Low
+                        return prioB - prioA;
+
+                    case 'priority_desc': 
+                        // Primary: Priority High-Low
+                        if(prioA !== prioB) return prioB - prioA;
+                        // Secondary: Cat A-Z
+                        return catA.localeCompare(catB);
+
+                    case 'priority_asc':  
+                        // Primary: Priority Low-High
+                        if(prioA !== prioB) return prioA - prioB;
+                        // Secondary: Cat A-Z
+                        return catA.localeCompare(catB);
+
+                    case 'date_asc':      
+                        if(a.date !== b.date) return new Date(a.date) - new Date(b.date);
+                        return prioB - prioA; // Sec: Prio High-Low
+
+                    case 'date_desc':     
+                        if(a.date !== b.date) return new Date(b.date) - new Date(a.date);
+                        return prioB - prioA;
+
+                    case 'name_asc':      
+                        if(a.name !== b.name) return a.name.localeCompare(b.name);
+                        return prioB - prioA;
+
                     default: return 0;
                 }
             });
