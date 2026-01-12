@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar: Bug Fixes</title>
+    <title>Calendar: Optimized Layout</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/alasql/4.2.2/alasql.min.js"></script>
     
@@ -21,28 +21,35 @@
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 24px; height: 100vh; display: flex; flex-direction: column; gap: 20px; }
 
+        /* --- UTILS --- */
         .hidden { display: none !important; }
         .flex { display: flex; gap: 12px; }
         .flex-wrap { display: flex; flex-wrap: wrap; gap: 10px; }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
         .flex-col { display: flex; flex-direction: column; gap: 12px; }
 
-        .btn { padding: 10px 16px; border: 1px solid var(--border); background: var(--bg-card); cursor: pointer; border-radius: 8px; font-size: 0.9rem; font-weight: 500; color: var(--text); transition: all 0.2s; box-shadow: var(--shadow-sm); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+        /* --- BUTTONS --- */
+        .btn { padding: 9px 14px; border: 1px solid var(--border); background: var(--bg-card); cursor: pointer; border-radius: 8px; font-size: 0.85rem; font-weight: 500; color: var(--text); transition: all 0.2s; box-shadow: var(--shadow-sm); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
         .btn:hover { background-color: #f1f5f9; border-color: #cbd5e1; transform: translateY(-1px); }
         .btn-primary { background-color: var(--primary); color: white; border: none; }
         .btn-danger { background-color: var(--danger); color: white; border: none; }
         .btn-green { background-color: var(--success); color: white; border: none; }
         .btn-dark { background-color: #1e293b; color: white; border: none; }
         
+        /* Button Groups */
         .btn-group { display: flex; }
         .btn-group .btn { border-radius: 0; border-right: none; }
         .btn-group .btn:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
         .btn-group .btn:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; border-right: 1px solid var(--border); }
-        .btn.btn-active { background-color: #e2e8f0; border-color: #94a3b8; color: #0f172a; font-weight: 600; }
+        
+        /* Active State */
+        .btn.btn-active, .btn-group .btn.btn-active { background-color: #e2e8f0 !important; border-color: #94a3b8 !important; color: #0f172a !important; font-weight: 700; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); z-index: 1; }
 
+        /* --- INPUTS --- */
         .select-wrapper { position: relative; width: 100%; }
         .input-select { width: 100%; appearance: none; padding: 10px 16px; padding-right: 36px; border: 1px solid var(--border); border-radius: 8px; background-color: var(--bg-card); font-size: 0.9rem; cursor: pointer; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; }
 
+        /* --- LAYOUT --- */
         header { display: flex; flex-direction: column; gap: 16px; flex-shrink: 0; }
         #current-date-display { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
         #filter-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; gap: 24px; flex-wrap: wrap; box-shadow: var(--shadow-md); margin-bottom: 10px; }
@@ -51,6 +58,7 @@
         #calendar-view { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
         #calendar-container { flex: 1; background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow-md); border: 1px solid var(--border); display: grid; gap: 1px; background-color: #f1f5f9; overflow: auto; }
 
+        /* --- CELLS & EVENTS --- */
         .day-cell { background-color: white; min-height: 100px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
         .cell-content { flex: 1; padding: 6px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; min-height: 0; }
         .day-cell.header { background-color: #ffffff; font-weight: 600; text-align: center; min-height: 44px; padding: 10px; color: var(--text-light); text-transform: uppercase; font-size: 0.8rem; z-index: 5; border-bottom: 1px solid var(--border); }
@@ -80,6 +88,7 @@
         .resizer-row { position: absolute; bottom: 0; left: 0; width: 100%; height: 12px; cursor: row-resize; z-index: 20; opacity: 0; }
         .resizer-row:hover { opacity: 1; background: rgba(59, 130, 246, 0.2); }
 
+        /* --- YEAR VIEW --- */
         .view-year #calendar-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; background: transparent; border: none; box-shadow: none; padding-right: 10px; }
         .month-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); }
         .month-card h3 { margin: 0 0 15px 0; border-bottom: 1px solid var(--border); padding-bottom: 10px; text-align: center; font-size: 1.1rem; color: var(--text); }
@@ -89,6 +98,7 @@
         .year-event-item { padding: 4px 8px; margin-bottom: 4px; border-radius: 4px; font-size: 0.75rem; color: white; cursor: pointer; display: flex; justify-content: space-between; }
         .priority-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; border: 1px solid rgba(255,255,255,0.8); }
 
+        /* --- MODALS --- */
         #modal-overlay, #delete-modal-overlay, #event-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 100; }
         #delete-modal-overlay { z-index: 200; }
         #create-view, #category-modal, #delete-options-modal, #event-modal { max-width: 500px; width: 95%; background: var(--bg-card); padding: 32px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow-y: auto; max-height: 90vh; border: 1px solid var(--border); }
@@ -102,12 +112,13 @@
         .chip.active { background-color: #eff6ff; border-color: var(--primary); color: var(--primary); }
         .chip-dot { width: 8px; height: 8px; border-radius: 50%; }
 
+        /* --- SQL --- */
         #sql-view { flex: 1; background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow-md); border: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
         .sql-wrapper { display: flex; gap: 24px; flex: 1; overflow: hidden; }
         .sql-main { flex: 3; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
         .sql-editor { width: 100%; height: 120px; background-color: var(--code-bg); color: var(--code-text); font-family: monospace; padding: 16px; border-radius: 8px; border: 1px solid #334155; resize: none; }
         .sql-results-container { flex: 1; overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
-        .sql-sidebar { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 20px; overflow: auto; border-left: 1px solid var(--border); padding-left: 24px; }
+        .sql-sidebar { flex: 1; min-width: 260px; display: flex; flex-direction: column; gap: 20px; overflow: hidden; border-left: 1px solid var(--border); padding-left: 24px; }
         .db-card { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
         .db-table-title { font-weight: 700; font-size: 0.85rem; color: var(--primary); display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
         .db-cols { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -132,7 +143,7 @@
                 <div class="form-group"><label>Color</label><div class="flex"><input type="color" id="cat-color" value="#3b82f6" style="height: 45px; width: 60px; padding: 0; border: none; cursor:pointer;"><input type="text" id="cat-color-text" value="#3b82f6" readonly style="flex:1;"></div></div>
                 <div class="flex" style="justify-content: space-between; margin-top: 24px;">
                     <button type="button" class="btn" onclick="toggleCategoryModal(false)">Close</button>
-                    <div><button type="button" id="btn-cat-clear" class="btn hidden" onclick="clearCategoryForm()">Cancel</button><button type="submit" class="btn btn-primary" id="btn-cat-save">Add</button></div>
+                    <div><button type="button" id="btn-cat-clear" class="btn hidden" onclick="clearCategoryForm()">Cancel</button><button type="submit" class="btn btn-primary">Save Category</button></div>
                 </div>
             </form>
             <div class="cat-list" id="cat-list-container"></div>
@@ -184,33 +195,45 @@
 
     <header>
         <div class="flex-between" style="width: 100%;">
-            <div class="flex" style="align-items: center;">
+            <div class="flex-col" style="gap:4px;">
                 <h2 id="current-date-display" style="margin:0;">Date</h2>
                 <span id="loading-status" style="font-size:0.85rem; color:var(--text-light);"></span>
             </div>
+            
             <div class="controls flex-wrap" style="justify-content: flex-end;">
                 <div class="btn-group view-switcher">
                     <button class="btn" onclick="setView('week')" id="btn-week">Week</button>
                     <button class="btn" onclick="setView('month')" id="btn-month">Month</button>
                     <button class="btn" onclick="setView('year')" id="btn-year">Year</button>
                 </div>
-                <div class="flex">
+                
+                <div class="btn-group">
                     <button class="btn" onclick="changeOffset(-1)">Prev</button>
                     <button class="btn" onclick="changeOffset(1)">Next</button>
                 </div>
+
+                <button class="btn btn-dark" onclick="setView('sql')" id="btn-sql">Query</button>
+                
+                <div class="btn-group">
+                    <button class="btn btn-green" onclick="downloadData()">Save</button>
+                    <button class="btn" onclick="triggerFileUpload()">Load</button>
+                </div>
+
                 <button class="btn btn-primary" onclick="openEventForm()">+ Add Task</button>
             </div>
         </div>
         
-        <div class="flex-between" style="border-top: 1px solid var(--border); padding-top: 10px;">
+        <div id="secondary-controls" class="flex-between" style="border-top: 1px solid var(--border); padding-top: 10px;">
             <div class="flex">
                 <button class="btn btn-active" id="btn-toggle-filters" onclick="toggleFilterPanel()">Filters & Layout</button>
                 <button class="btn" onclick="toggleCategoryModal(true)">Categories</button>
-                <button class="btn btn-dark" onclick="setView('sql')" id="btn-sql">SQL</button>
             </div>
-            <div class="flex">
-                <button class="btn btn-green" onclick="downloadData()">Save</button>
-                <button class="btn" onclick="triggerFileUpload()">Load</button>
+            
+            <div id="year-controls" class="flex hidden">
+                <div class="btn-group">
+                    <button class="btn" id="btn-mode-list" onclick="setYearMode('list')">List</button>
+                    <button class="btn" id="btn-mode-grid" onclick="setYearMode('grid')">Grid</button>
+                </div>
             </div>
         </div>
 
@@ -240,10 +263,6 @@
                         </select>
                     </div>
                     <button class="btn" onclick="resetLayout()">Reset Grid Sizes</button>
-                    <div id="year-controls" class="flex hidden">
-                        <button class="btn" id="btn-mode-list" onclick="setYearMode('list')" style="flex:1">List</button>
-                        <button class="btn" id="btn-mode-grid" onclick="setYearMode('grid')" style="flex:1">Grid</button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -458,7 +477,6 @@
         function promptDeleteCategory(id){ state.categoryPendingDelete=id; document.getElementById('delete-modal-overlay').classList.remove('hidden'); }
         function closeDeleteModal(){ state.categoryPendingDelete=null; document.getElementById('delete-modal-overlay').classList.add('hidden'); }
         
-        // FIXED: Added render call
         function toggleCategoryModal(s){ 
             const m=document.getElementById('modal-overlay'); 
             if(s){ m.classList.remove('hidden'); clearCategoryForm(); renderCategoryList(); } 
@@ -485,20 +503,31 @@
             document.querySelectorAll('.controls .btn').forEach(b => { if(b.id && b.id.startsWith('btn-')) b.classList.remove('btn-primary'); b.classList.remove('btn-active'); });
             if(document.getElementById(`btn-${state.view}`)) document.getElementById(`btn-${state.view}`).classList.add('btn-active');
             
+            // FIXED TOGGLE LOGIC
             if(state.view === 'year') {
-                document.getElementById('btn-mode-list').classList.toggle('btn-active', state.yearMode === 'list');
-                document.getElementById('btn-mode-grid').classList.toggle('btn-active', state.yearMode === 'grid');
+                document.getElementById('btn-mode-list').classList.remove('btn-active');
+                document.getElementById('btn-mode-grid').classList.remove('btn-active');
+                if(state.yearMode === 'list') document.getElementById('btn-mode-list').classList.add('btn-active');
+                else document.getElementById('btn-mode-grid').classList.add('btn-active');
             }
 
             const container = document.getElementById('calendar-container');
             const viewEl = document.getElementById('calendar-view');
             const sqlView = document.getElementById('sql-view');
+            const secControls = document.getElementById('secondary-controls');
 
+            // HIDE/SHOW SECONDARY ROW BASED ON VIEW
             if(state.view === 'sql') {
-                container.style.display = 'none'; viewEl.classList.add('hidden'); sqlView.classList.remove('hidden'); document.getElementById('year-controls').classList.add('hidden');
-                runQuery(); return;
+                container.style.display = 'none'; 
+                viewEl.classList.add('hidden'); 
+                sqlView.classList.remove('hidden'); 
+                secControls.classList.add('hidden'); // NEW: Hides Filter/Cat row
+                runQuery(); 
+                return;
             } else { 
-                viewEl.classList.remove('hidden'); sqlView.classList.add('hidden'); 
+                viewEl.classList.remove('hidden'); 
+                sqlView.classList.add('hidden'); 
+                secControls.classList.remove('hidden'); // NEW: Shows Filter/Cat row
             }
 
             if (state.view === 'year') { document.getElementById('year-controls').classList.remove('hidden'); } else { document.getElementById('year-controls').classList.add('hidden'); }
