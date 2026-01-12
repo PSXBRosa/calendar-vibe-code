@@ -335,7 +335,7 @@
                             if(uniqueColors.length === 1) style = `background-color: ${uniqueColors[0]}; color: white;`;
                             else style = `background: linear-gradient(135deg, ${uniqueColors.join(', ')}); color: white;`;
                             cssClass = 'has-item-bold';
-                        } else { style = `border: 2px solid var(--primary); color: var(--text);`; cssClass = 'has-item-bold'; }
+                        } else { style = `text-decoration-line: underline;`; cssClass = 'has-item-bold'; }
                     }
                     html += `<div class="mini-day ${cssClass}" style="${style}">${d}</div>`;
                 }
