@@ -620,18 +620,21 @@
             const viewEl = document.getElementById('calendar-view');
             const sqlView = document.getElementById('sql-view');
             const secControls = document.getElementById('secondary-controls');
+            const filterPanel = document.getElementById('filter-panel');
 
             if(state.view === 'sql') {
                 container.style.display = 'none'; 
                 viewEl.classList.add('hidden'); 
                 sqlView.classList.remove('hidden'); 
-                secControls.classList.add('hidden'); 
+                secControls.classList.add('hidden');
+                filterPanel.classList.add('hidden'); 
                 runQuery(); 
                 return;
             } else { 
                 viewEl.classList.remove('hidden'); 
                 sqlView.classList.add('hidden'); 
                 secControls.classList.remove('hidden'); 
+                filterPanel.classList.toggle('hidden', !state.filterPanelOpen);
             }
 
             if (state.view === 'year') { document.getElementById('year-controls').classList.remove('hidden'); } else { document.getElementById('year-controls').classList.add('hidden'); }
