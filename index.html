@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendar: Optimized Layout</title>
+    <title>Calendar: Clean Design</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/alasql/4.2.2/alasql.min.js"></script>
     
@@ -36,13 +36,12 @@
         .btn-green { background-color: var(--success); color: white; border: none; }
         .btn-dark { background-color: #1e293b; color: white; border: none; }
         
-        /* Button Groups */
         .btn-group { display: flex; }
         .btn-group .btn { border-radius: 0; border-right: none; }
         .btn-group .btn:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
         .btn-group .btn:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; border-right: 1px solid var(--border); }
         
-        /* Active State */
+        /* Active State Style */
         .btn.btn-active, .btn-group .btn.btn-active { background-color: #e2e8f0 !important; border-color: #94a3b8 !important; color: #0f172a !important; font-weight: 700; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); z-index: 1; }
 
         /* --- INPUTS --- */
@@ -58,7 +57,6 @@
         #calendar-view { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
         #calendar-container { flex: 1; background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow-md); border: 1px solid var(--border); display: grid; gap: 1px; background-color: #f1f5f9; overflow: auto; }
 
-        /* --- CELLS & EVENTS --- */
         .day-cell { background-color: white; min-height: 100px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
         .cell-content { flex: 1; padding: 6px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; min-height: 0; }
         .day-cell.header { background-color: #ffffff; font-weight: 600; text-align: center; min-height: 44px; padding: 10px; color: var(--text-light); text-transform: uppercase; font-size: 0.8rem; z-index: 5; border-bottom: 1px solid var(--border); }
@@ -88,15 +86,15 @@
         .resizer-row { position: absolute; bottom: 0; left: 0; width: 100%; height: 12px; cursor: row-resize; z-index: 20; opacity: 0; }
         .resizer-row:hover { opacity: 1; background: rgba(59, 130, 246, 0.2); }
 
-        /* --- YEAR VIEW --- */
         .view-year #calendar-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; background: transparent; border: none; box-shadow: none; padding-right: 10px; }
         .month-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); }
         .month-card h3 { margin: 0 0 15px 0; border-bottom: 1px solid var(--border); padding-bottom: 10px; text-align: center; font-size: 1.1rem; color: var(--text); }
         .mini-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
         .mini-day { font-size: 0.8rem; text-align: center; padding: 4px 0; border-radius: 4px; color: var(--text); }
         .mini-day.header-day { color: var(--text-light); font-size: 0.7rem; font-weight: 600; }
-        .year-event-item { padding: 4px 8px; margin-bottom: 4px; border-radius: 4px; font-size: 0.75rem; color: white; cursor: pointer; display: flex; justify-content: space-between; }
-        .priority-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; border: 1px solid rgba(255,255,255,0.8); }
+        
+        .year-event-item { padding: 4px 8px; margin-bottom: 4px; border-radius: 4px; font-size: 0.75rem; color: white; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid rgba(0,0,0,0.1); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .year-event-item:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
         /* --- MODALS --- */
         #modal-overlay, #delete-modal-overlay, #event-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 100; }
@@ -143,7 +141,10 @@
                 <div class="form-group"><label>Color</label><div class="flex"><input type="color" id="cat-color" value="#3b82f6" style="height: 45px; width: 60px; padding: 0; border: none; cursor:pointer;"><input type="text" id="cat-color-text" value="#3b82f6" readonly style="flex:1;"></div></div>
                 <div class="flex" style="justify-content: space-between; margin-top: 24px;">
                     <button type="button" class="btn" onclick="toggleCategoryModal(false)">Close</button>
-                    <div><button type="button" id="btn-cat-clear" class="btn hidden" onclick="clearCategoryForm()">Cancel</button><button type="submit" class="btn btn-primary">Save Category</button></div>
+                    <div>
+                        <button type="button" id="btn-cat-clear" class="btn hidden" onclick="clearCategoryForm()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="btn-cat-save">Add</button>
+                    </div>
                 </div>
             </form>
             <div class="cat-list" id="cat-list-container"></div>
@@ -305,7 +306,10 @@
                 else monthEvents.forEach(ev => {
                         const color = getCategoryColor(ev.categoryId); const day = ev.date.split('-')[2];
                         const priority = ev.priority || 'low';
-                        html += `<div class="year-event-item" style="background-color: ${color}" onclick="openEventForm('${ev.id}')"><span><span class="priority-dot" style="background-color:${priority === 'high' ? '#fee2e2' : priority === 'medium' ? '#ffedd5' : '#d1fae5'}"></span> ${ev.name}</span><span style="opacity:0.8">${day}</span></div>`;
+                        html += `<div class="year-event-item prio-${priority}" style="background-color: ${color}" onclick="openEventForm('${ev.id}')">
+                                    <span style="overflow:hidden; text-overflow:ellipsis;">${ev.name}</span>
+                                    <span style="opacity:0.8; font-size:0.7rem;">${day}</span>
+                                 </div>`;
                     });
                 html += `</div>`; card.innerHTML = html; container.appendChild(card);
             }
@@ -503,12 +507,9 @@
             document.querySelectorAll('.controls .btn').forEach(b => { if(b.id && b.id.startsWith('btn-')) b.classList.remove('btn-primary'); b.classList.remove('btn-active'); });
             if(document.getElementById(`btn-${state.view}`)) document.getElementById(`btn-${state.view}`).classList.add('btn-active');
             
-            // FIXED TOGGLE LOGIC
             if(state.view === 'year') {
-                document.getElementById('btn-mode-list').classList.remove('btn-active');
-                document.getElementById('btn-mode-grid').classList.remove('btn-active');
-                if(state.yearMode === 'list') document.getElementById('btn-mode-list').classList.add('btn-active');
-                else document.getElementById('btn-mode-grid').classList.add('btn-active');
+                document.getElementById('btn-mode-list').classList.toggle('btn-active', state.yearMode === 'list');
+                document.getElementById('btn-mode-grid').classList.toggle('btn-active', state.yearMode === 'grid');
             }
 
             const container = document.getElementById('calendar-container');
@@ -516,18 +517,17 @@
             const sqlView = document.getElementById('sql-view');
             const secControls = document.getElementById('secondary-controls');
 
-            // HIDE/SHOW SECONDARY ROW BASED ON VIEW
             if(state.view === 'sql') {
                 container.style.display = 'none'; 
                 viewEl.classList.add('hidden'); 
                 sqlView.classList.remove('hidden'); 
-                secControls.classList.add('hidden'); // NEW: Hides Filter/Cat row
+                secControls.classList.add('hidden'); 
                 runQuery(); 
                 return;
             } else { 
                 viewEl.classList.remove('hidden'); 
                 sqlView.classList.add('hidden'); 
-                secControls.classList.remove('hidden'); // NEW: Shows Filter/Cat row
+                secControls.classList.remove('hidden'); 
             }
 
             if (state.view === 'year') { document.getElementById('year-controls').classList.remove('hidden'); } else { document.getElementById('year-controls').classList.add('hidden'); }
