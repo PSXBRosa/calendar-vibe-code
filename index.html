@@ -410,7 +410,111 @@
 
         // --- SQL ---
         function setSqlQuery(q) { document.getElementById('sql-input').value = q; runQuery(); }
-        function runQuery() { const query = document.getElementById('sql-input').value; const tableHead = document.querySelector('#sql-results thead'); const tableBody = document.querySelector('#sql-results tbody'); const flatEvents = events.map(e => { const cat = categories.find(c => String(c.id) === String(e.categoryId)) || {name:'Unknown', color:'#ccc'}; const d = new Date(e.date + 'T00:00:00'); const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']; const months = ['January','February','March','April','May','June','July','August','September','October','November','December']; return { id: e.id, name: e.name, date: e.date, priority: e.priority, description: e.description, category_name: cat.name, category_color: cat.color, day_name: days[d.getDay()], month_name: months[d.getMonth()], year: d.getFullYear(), day: d.getDate() }; }); const calendarDates = []; const startYear = new Date().getFullYear() - 2; const endYear = new Date().getFullYear() + 2; const start = new Date(startYear, 0, 1); const end = new Date(endYear, 11, 31); const daysArr = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']; for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) { calendarDates.push({ date: formatDateSafe(d), day_name: daysArr[d.getDay()], year: d.getFullYear() }); } try { if (!alasql.databases.cal) alasql('CREATE DATABASE cal'); alasql('USE cal'); alasql('DROP TABLE IF EXISTS events'); alasql('CREATE TABLE events'); alasql('SELECT * INTO events FROM ?', [flatEvents]); alasql('DROP TABLE IF EXISTS dates'); alasql('CREATE TABLE dates'); alasql('SELECT * INTO dates FROM ?', [calendarDates]); renderSchema(); const res = alasql(query); if(query.trim() && !queryHistory.includes(query)) { queryHistory.unshift(query); if(queryHistory.length > 20) queryHistory.pop(); renderHistory(); saveToLocal(); } tableHead.innerHTML = ''; tableBody.innerHTML = ''; if (!res || res.length === 0) { tableBody.innerHTML = '<tr><td style="padding:10px; color:#666;">No results found.</td></tr>'; return; } const headers = Object.keys(res[0]); let headRow = '<tr>'; headers.forEach(h => headRow += `<th>${h}</th>`); headRow += '</tr>'; tableHead.innerHTML = headRow; res.forEach(row => { let tr = '<tr>'; headers.forEach(h => tr += `<td>${row[h]}</td>`); tr += '</tr>'; tableBody.innerHTML += tr; }); } catch (err) { tableHead.innerHTML = '<tr><th>Error</th></tr>'; tableBody.innerHTML = `<tr><td style="color:red;">${err.message}</td></tr>`; } }
+        function runQuery() { 
+            // 1. Get the current value from the text area
+            let query = document.getElementById('sql-input').value;
+
+            // --- THE FIX STARTS HERE ---
+            // If the box is empty (e.g. first load), set a default query to prevent the crash
+            if(!query.trim()) { 
+                query = 'SELECT * FROM events'; 
+                document.getElementById('sql-input').value = query; 
+            }
+            // --- THE FIX ENDS HERE ---
+
+            const tableHead = document.querySelector('#sql-results thead'); 
+            const tableBody = document.querySelector('#sql-results tbody'); 
+
+            // Prepare data for Alasql
+            const flatEvents = events.map(e => { 
+                const cat = categories.find(c => String(c.id) === String(e.categoryId)) || {name:'Unknown', color:'#ccc'}; 
+                const d = new Date(e.date + 'T00:00:00'); 
+                const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']; 
+                const months = ['January','February','March','April','May','June','July','August','September','October','November','December']; 
+                return { 
+                    id: e.id, 
+                    name: e.name, 
+                    date: e.date, 
+                    priority: e.priority, 
+                    description: e.description, 
+                    category_name: cat.name, 
+                    category_color: cat.color, 
+                    day_name: days[d.getDay()], 
+                    month_name: months[d.getMonth()], 
+                    year: d.getFullYear(), 
+                    day: d.getDate() 
+                }; 
+            }); 
+
+            const calendarDates = []; 
+            const startYear = new Date().getFullYear() - 2; 
+            const endYear = new Date().getFullYear() + 2; 
+            const start = new Date(startYear, 0, 1); 
+            const end = new Date(endYear, 11, 31); 
+            const daysArr = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']; 
+            
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) { 
+                calendarDates.push({ 
+                    date: formatDateSafe(d), 
+                    day_name: daysArr[d.getDay()], 
+                    year: d.getFullYear() 
+                }); 
+            } 
+
+            try { 
+                // create database instance if needed
+                if (!alasql.databases.cal) alasql('CREATE DATABASE cal'); 
+                alasql('USE cal'); 
+                
+                // Refresh tables with current data
+                alasql('DROP TABLE IF EXISTS events'); 
+                alasql('CREATE TABLE events'); 
+                alasql('SELECT * INTO events FROM ?', [flatEvents]); 
+                
+                alasql('DROP TABLE IF EXISTS dates'); 
+                alasql('CREATE TABLE dates'); 
+                alasql('SELECT * INTO dates FROM ?', [calendarDates]); 
+                
+                renderSchema(); 
+                
+                // Execute the user's query
+                const res = alasql(query); 
+                
+                // Save to history if unique
+                if(query.trim() && !queryHistory.includes(query)) { 
+                    queryHistory.unshift(query); 
+                    if(queryHistory.length > 20) queryHistory.pop(); 
+                    renderHistory(); 
+                    saveToLocal(); 
+                } 
+                
+                // Render Results Table
+                tableHead.innerHTML = ''; 
+                tableBody.innerHTML = ''; 
+                
+                if (!res || res.length === 0) { 
+                    tableBody.innerHTML = '<tr><td style="padding:10px; color:#666;">No results found.</td></tr>'; 
+                    return; 
+                } 
+                
+                const headers = Object.keys(res[0]); 
+                let headRow = '<tr>'; 
+                headers.forEach(h => headRow += `<th>${h}</th>`); 
+                headRow += '</tr>'; 
+                tableHead.innerHTML = headRow; 
+                
+                res.forEach(row => { 
+                    let tr = '<tr>'; 
+                    headers.forEach(h => tr += `<td>${row[h]}</td>`); 
+                    tr += '</tr>'; 
+                    tableBody.innerHTML += tr; 
+                }); 
+
+            } catch (err) { 
+                tableHead.innerHTML = '<tr><th>Error</th></tr>'; 
+                tableBody.innerHTML = `<tr><td style="color:red;">${err.message}</td></tr>`; 
+            } 
+        }
         
         function renderSchema() { 
             const container = document.getElementById('schema-list');
